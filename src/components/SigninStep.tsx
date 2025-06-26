@@ -30,10 +30,8 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
     setError('');
 
     try {
-      // 가짜 API 호출
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // 데모용 비밀번호 체크
       if (password === 'password123') {
         console.log('로그인 성공, 2차 인증으로 진행');
         onNext();
@@ -53,7 +51,7 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
       <Button
         onClick={onBack}
         variant="ghost"
-        className="p-0 h-auto text-gray-600 hover:text-gray-900"
+        className="p-0 h-auto text-slate-400 hover:text-white"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         뒤로
@@ -61,10 +59,10 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-white mb-2">
           비밀번호 입력
         </h2>
-        <p className="text-gray-600">
+        <p className="text-slate-400">
           {email}
         </p>
       </div>
@@ -77,12 +75,12 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-12"
+            className="h-12 bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500"
             disabled={isLoading}
             autoFocus
           />
           {error && (
-            <p className="text-red-500 text-sm mt-2">{error}</p>
+            <p className="text-red-400 text-sm mt-2">{error}</p>
           )}
         </div>
 
@@ -94,7 +92,7 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
               checked={rememberMe}
               onCheckedChange={(checked) => setRememberMe(checked as boolean)}
             />
-            <label htmlFor="remember" className="text-sm text-gray-600">
+            <label htmlFor="remember" className="text-sm text-slate-400">
               로그인 상태 유지
             </label>
           </div>
@@ -102,7 +100,7 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
           <Button
             type="button"
             variant="link"
-            className="p-0 h-auto text-sm text-blue-600 hover:text-blue-800"
+            className="p-0 h-auto text-sm text-blue-400 hover:text-blue-300"
             onClick={onForgotPassword}
           >
             비밀번호 찾기
@@ -111,7 +109,7 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
 
         <Button
           type="submit"
-          className="w-full h-12 bg-gray-900 hover:bg-gray-800"
+          className="w-full h-12 bg-blue-600 hover:bg-blue-700"
           disabled={isLoading || !password}
         >
           {isLoading ? '로그인 중...' : '로그인'}
@@ -120,8 +118,8 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
 
       {/* 도움말 */}
       <div className="text-center">
-        <p className="text-sm text-gray-500">
-          데모용 비밀번호: <code className="bg-gray-100 px-2 py-1 rounded text-xs">password123</code>
+        <p className="text-sm text-slate-500">
+          데모용 비밀번호: <code className="bg-slate-700 px-2 py-1 rounded text-xs">password123</code>
         </p>
       </div>
     </div>

@@ -8,7 +8,6 @@ import EmailStep from '../components/EmailStep';
 import SigninStep from '../components/SigninStep';
 import SignupStep from '../components/SignupStep';
 import TwoFactorStep from '../components/TwoFactorStep';
-import SuccessStep from '../components/SuccessStep';
 import Dashboard from '../components/Dashboard';
 
 const Index = () => {
@@ -69,12 +68,7 @@ const Index = () => {
   };
 
   const handleTwoFactorNext = () => {
-    console.log('2차 인증 완료');
-    setAuthState(prev => ({ ...prev, step: 'success' }));
-  };
-
-  const handleSuccessNext = () => {
-    console.log('대시보드로 이동');
+    console.log('2차 인증 완료, 대시보드로 이동');
     setAuthState(prev => ({ ...prev, step: 'dashboard' }));
   };
 
@@ -111,7 +105,6 @@ const Index = () => {
 
   const handleForgotPassword = () => {
     console.log('비밀번호 찾기 요청');
-    // 실제로는 비밀번호 재설정 플로우로 이동
     alert('비밀번호 재설정 링크가 이메일로 발송되었습니다. (데모)');
   };
 
@@ -126,28 +119,28 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background font-noto">
+    <div className="min-h-screen bg-slate-900 font-noto">
       <div className="min-h-screen flex">
-        {/* Welcome Panel - 2:1 비율의 왼쪽 */}
+        {/* Welcome Panel - 5:5 비율의 왼쪽 */}
         <div 
           className={`
             transition-all duration-500 ease-in-out
             ${authState.isExpanded 
-              ? 'w-0 overflow-hidden' 
-              : 'w-full lg:w-2/3'
+              ? 'w-0 overflow-hidden lg:w-0' 
+              : 'w-full lg:w-1/2'
             }
           `}
         >
           <WelcomePanel isVisible={!authState.isExpanded} />
         </div>
 
-        {/* Auth Panel - 2:1 비율의 오른쪽 */}
+        {/* Auth Panel - 5:5 비율의 오른쪽 */}
         <div 
           className={`
-            bg-white flex flex-col justify-center transition-all duration-500 ease-in-out
+            bg-slate-800 flex flex-col justify-center transition-all duration-500 ease-in-out
             ${authState.isExpanded 
               ? 'w-full' 
-              : 'w-full lg:w-1/3'
+              : 'w-full lg:w-1/2'
             }
           `}
         >
@@ -181,13 +174,6 @@ const Index = () => {
               <TwoFactorStep
                 onBack={handleBack}
                 onNext={handleTwoFactorNext}
-              />
-            )}
-
-            {authState.step === 'success' && (
-              <SuccessStep
-                userEmail={authState.email}
-                onContinue={handleSuccessNext}
               />
             )}
           </div>
