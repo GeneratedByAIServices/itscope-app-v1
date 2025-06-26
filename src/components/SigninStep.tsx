@@ -32,6 +32,7 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
       
+      console.log('로그인 시도:', { email, password, rememberMe });
       if (password === 'password123') {
         console.log('로그인 성공, 2차 인증으로 진행');
         onNext();
@@ -54,7 +55,7 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
         className="p-0 h-auto text-slate-400 hover:text-white"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
-        뒤로
+        다른 아이디로 로그인
       </Button>
 
       {/* 헤더 */}
@@ -115,13 +116,6 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, onBack, onNext, onForgot
           {isLoading ? '로그인 중...' : '로그인'}
         </Button>
       </form>
-
-      {/* 도움말 */}
-      <div className="text-center">
-        <p className="text-sm text-slate-500">
-          데모용 비밀번호: <code className="bg-slate-700 px-2 py-1 rounded text-xs">password123</code>
-        </p>
-      </div>
     </div>
   );
 };

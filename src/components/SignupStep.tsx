@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft } from 'lucide-react';
 import { validatePassword } from '../utils/authUtils';
+import LegalModal from './LegalModal';
 
 interface SignupStepProps {
   email: string;
@@ -21,6 +22,7 @@ const SignupStep: React.FC<SignupStepProps> = ({ email, onBack, onNext }) => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -63,7 +65,6 @@ const SignupStep: React.FC<SignupStepProps> = ({ email, onBack, onNext }) => {
     setIsLoading(true);
 
     try {
-      // 가짜 API 호출
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       console.log('회원가입 성공:', { email, ...formData });
@@ -83,18 +84,18 @@ const SignupStep: React.FC<SignupStepProps> = ({ email, onBack, onNext }) => {
       <Button
         onClick={onBack}
         variant="ghost"
-        className="p-0 h-auto text-gray-600 hover:text-gray-900"
+        className="p-0 h-auto text-slate-400 hover:text-white"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
-        뒤로
+        다른 아이디로 로그인
       </Button>
 
       {/* 헤더 */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-white mb-2">
           회원가입
         </h2>
-        <p className="text-gray-600">
+        <p className="text-slate-400">
           {email}
         </p>
       </div>
@@ -108,11 +109,11 @@ const SignupStep: React.FC<SignupStepProps> = ({ email, onBack, onNext }) => {
             placeholder="이름"
             value={formData.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
-            className="h-12"
+            className="h-12 bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500"
             disabled={isLoading}
           />
           {errors.name && (
-            <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            <p className="text-red-400 text-sm mt-1">{errors.name}</p>
           )}
         </div>
 
@@ -123,26 +124,26 @@ const SignupStep: React.FC<SignupStepProps> = ({ email, onBack, onNext }) => {
             placeholder="비밀번호"
             value={formData.password}
             onChange={(e) => handleInputChange('password', e.target.value)}
-            className="h-12"
+            className="h-12 bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500"
             disabled={isLoading}
           />
           {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            <p className="text-red-400 text-sm mt-1">{errors.password}</p>
           )}
           
           {/* 비밀번호 강도 표시 */}
           {formData.password && (
             <div className="mt-2 space-y-1">
-              <div className="text-xs text-gray-600">비밀번호 조건:</div>
+              <div className="text-xs text-slate-400">비밀번호 조건:</div>
               <div className="space-y-1">
                 {passwordValidation.errors.map((error, index) => (
-                  <div key={index} className="text-xs text-red-500 flex items-center">
+                  <div key={index} className="text-xs text-red-400 flex items-center">
                     <span className="w-1 h-1 bg-red-500 rounded-full mr-2" />
                     {error}
                   </div>
                 ))}
                 {passwordValidation.isValid && (
-                  <div className="text-xs text-green-600 flex items-center">
+                  <div className="text-xs text-green-400 flex items-center">
                     <span className="w-1 h-1 bg-green-500 rounded-full mr-2" />
                     안전한 비밀번호입니다
                   </div>
@@ -159,11 +160,11 @@ const SignupStep: React.FC<SignupStepProps> = ({ email, onBack, onNext }) => {
             placeholder="비밀번호 확인"
             value={formData.confirmPassword}
             onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-            className="h-12"
+            className="h-12 bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500"
             disabled={isLoading}
           />
           {errors.confirmPassword && (
-            <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+            <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>
           )}
         </div>
 
@@ -175,27 +176,47 @@ const SignupStep: React.FC<SignupStepProps> = ({ email, onBack, onNext }) => {
               checked={acceptTerms}
               onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
             />
-            <label htmlFor="terms" className="text-sm text-gray-600 leading-5">
-              이용약관 및 개인정보처리방침에 동의합니다
+            <label htmlFor="terms" className="text-sm text-slate-300 leading-5">
+              <button
+                type="button"
+                onClick={() => setLegalModal('terms')}
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                이용약관
+              </button>
+              {' '}및{' '}
+              <button
+                type="button"
+                onClick={() => setLegalModal('privacy')}
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                개인정보처리방침
+              </button>
+              에 동의합니다
             </label>
           </div>
           {errors.terms && (
-            <p className="text-red-500 text-sm">{errors.terms}</p>
+            <p className="text-red-400 text-sm">{errors.terms}</p>
           )}
         </div>
 
         {errors.general && (
-          <p className="text-red-500 text-sm text-center">{errors.general}</p>
+          <p className="text-red-400 text-sm text-center">{errors.general}</p>
         )}
 
         <Button
           type="submit"
-          className="w-full h-12 bg-gray-900 hover:bg-gray-800"
+          className="w-full h-12 bg-blue-600 hover:bg-blue-700"
           disabled={isLoading || !formData.name || !formData.password || !formData.confirmPassword || !acceptTerms}
         >
           {isLoading ? '가입 중...' : '회원가입'}
         </Button>
       </form>
+
+      <LegalModal 
+        type={legalModal}
+        onClose={() => setLegalModal(null)}
+      />
     </div>
   );
 };

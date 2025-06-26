@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 interface TwoFactorStepProps {
+  email: string;
   onBack: () => void;
   onNext: () => void;
 }
 
-const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ onBack, onNext }) => {
+const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ email, onBack, onNext }) => {
   const [code, setCode] = useState('');
   const [method, setMethod] = useState<'totp' | 'sms'>('totp');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,8 +31,9 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ onBack, onNext }) => {
       // 가짜 2차 인증 검증
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      console.log('2차 인증 시도:', { email, code, method });
       if (code === '123456') {
-        console.log('2차 인증 성공');
+        console.log('2차 인증 성공, 대시보드로 이동');
         onNext();
       } else {
         setError('인증 코드가 올바르지 않습니다');
@@ -44,7 +46,7 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ onBack, onNext }) => {
   };
 
   const handleResendCode = () => {
-    console.log('인증 코드 재전송');
+    console.log('인증 코드 재전송:', { email, method });
     alert('인증 코드가 재전송되었습니다. (데모)');
   };
 
@@ -58,7 +60,7 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ onBack, onNext }) => {
         disabled={isLoading}
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
-        뒤로
+        비밀번호 입력으로
       </Button>
 
       {/* 헤더 */}
@@ -66,7 +68,10 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ onBack, onNext }) => {
         <h2 className="text-2xl font-bold text-white mb-2">
           2차 인증
         </h2>
-        <p className="text-slate-400">
+        <p className="text-slate-400 mb-1">
+          {email}
+        </p>
+        <p className="text-slate-500 text-sm">
           보안을 위해 추가 인증이 필요합니다
         </p>
       </div>
@@ -153,13 +158,6 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ onBack, onNext }) => {
         >
           {method === 'sms' ? 'SMS 재전송' : '새 코드 요청'}
         </Button>
-      </div>
-
-      {/* 도움말 */}
-      <div className="text-center">
-        <p className="text-sm text-slate-500">
-          데모용 인증 코드: <code className="bg-slate-700 px-2 py-1 rounded text-xs">123456</code>
-        </p>
       </div>
     </div>
   );

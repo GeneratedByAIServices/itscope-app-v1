@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AuthState } from '../types/auth';
-import { checkEmailExists, attemptSignin, attemptSignup, verifyTwoFactorCode } from '../utils/authUtils';
+import { checkEmailExists } from '../utils/authUtils';
 
 import WelcomePanel from '../components/WelcomePanel';
 import EmailStep from '../components/EmailStep';
@@ -37,17 +37,18 @@ const Index = () => {
     }
   };
 
-  const handleSocialSignin = (provider: 'google' | 'github') => {
+  const handleSocialSignin = (provider: 'google') => {
     console.log(`${provider} 소셜 로그인 시도`);
     
     // 소셜 로그인 성공 시뮬레이션
     setTimeout(() => {
+      const mockEmail = `user@${provider}.com`;
       setAuthState(prev => ({
         ...prev,
-        email: `user@${provider}.com`,
+        email: mockEmail,
         user: {
           id: '1',
-          email: `user@${provider}.com`,
+          email: mockEmail,
           name: `${provider} 사용자`,
           createdAt: new Date()
         },
@@ -104,7 +105,7 @@ const Index = () => {
   };
 
   const handleForgotPassword = () => {
-    console.log('비밀번호 찾기 요청');
+    console.log('비밀번호 찾기 요청:', authState.email);
     alert('비밀번호 재설정 링크가 이메일로 발송되었습니다. (데모)');
   };
 
@@ -121,7 +122,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-slate-900 font-noto">
       <div className="min-h-screen flex">
-        {/* Welcome Panel - 5:5 비율의 왼쪽 */}
+        {/* Welcome Panel - 50% 비율의 왼쪽 */}
         <div 
           className={`
             transition-all duration-500 ease-in-out
@@ -134,7 +135,7 @@ const Index = () => {
           <WelcomePanel isVisible={!authState.isExpanded} />
         </div>
 
-        {/* Auth Panel - 5:5 비율의 오른쪽 */}
+        {/* Auth Panel - 50% 비율의 오른쪽 */}
         <div 
           className={`
             bg-slate-800 flex flex-col justify-center transition-all duration-500 ease-in-out
@@ -149,7 +150,6 @@ const Index = () => {
               <EmailStep
                 onNext={handleEmailNext}
                 onGoogleSignin={() => handleSocialSignin('google')}
-                onGithubSignin={() => handleSocialSignin('github')}
               />
             )}
 
@@ -172,6 +172,7 @@ const Index = () => {
 
             {authState.step === 'twofa' && (
               <TwoFactorStep
+                email={authState.email}
                 onBack={handleBack}
                 onNext={handleTwoFactorNext}
               />

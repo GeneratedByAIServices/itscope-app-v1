@@ -10,7 +10,7 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
     <div 
       className={`
         ${isVisible ? 'flex' : 'hidden'}
-        flex-col justify-center items-center p-8 lg:p-12
+        h-full flex-col justify-center items-center p-8 lg:p-12
         bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900
         hover:from-slate-800 hover:via-slate-700 hover:to-slate-800
         transition-all duration-700 ease-in-out
@@ -36,10 +36,10 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
         {/* Welcome 메시지 */}
         <div className="space-y-6">
           <h2 className="text-4xl font-semibold text-white">
-            Welcome to ModernAuth
+            프로젝트 관리의 새로운 시작
           </h2>
           <p className="text-slate-300 text-lg leading-relaxed">
-            Experience seamless authentication with our modern, secure, and user-friendly platform.
+            안전하고 효율적인 프로젝트 관리 시스템으로 팀의 생산성을 극대화하세요.
           </p>
         </div>
 
@@ -50,8 +50,8 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
               <div className="w-3 h-3 bg-blue-500 rounded-full" />
             </div>
             <div className="text-left">
-              <div className="font-medium text-white mb-1">Secure & Reliable</div>
-              <div className="text-sm text-slate-400">Enterprise-grade security with 2FA support</div>
+              <div className="font-medium text-white mb-1">안전하고 신뢰할 수 있는</div>
+              <div className="text-sm text-slate-400">엔터프라이즈급 보안과 2단계 인증 지원</div>
             </div>
           </div>
           
@@ -60,8 +60,8 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
               <div className="w-3 h-3 bg-purple-500 rounded-full" />
             </div>
             <div className="text-left">
-              <div className="font-medium text-white mb-1">Lightning Fast</div>
-              <div className="text-sm text-slate-400">Quick authentication with social logins</div>
+              <div className="font-medium text-white mb-1">빠르고 간편한</div>
+              <div className="text-sm text-slate-400">소셜 로그인으로 빠른 접근</div>
             </div>
           </div>
           
@@ -70,8 +70,8 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
               <div className="w-3 h-3 bg-green-500 rounded-full" />
             </div>
             <div className="text-left">
-              <div className="font-medium text-white mb-1">User Friendly</div>
-              <div className="text-sm text-slate-400">Intuitive design that users love</div>
+              <div className="font-medium text-white mb-1">사용자 친화적</div>
+              <div className="text-sm text-slate-400">직관적인 디자인으로 쉬운 사용</div>
             </div>
           </div>
         </div>
