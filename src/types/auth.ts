@@ -7,7 +7,7 @@ export interface User {
 }
 
 export interface AuthState {
-  step: 'welcome' | 'email' | 'signin' | 'signup' | 'twofa' | 'success';
+  step: 'welcome' | 'email' | 'signin' | 'signup' | 'twofa' | 'success' | 'dashboard';
   email: string;
   isSignup: boolean;
   user: User | null;
