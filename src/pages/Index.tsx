@@ -1,187 +1,198 @@
-
-import React, { useState } from 'react';
-import { AuthState } from '../types/auth';
-import { checkEmailExists } from '../utils/authUtils';
-
+import { useEffect, useState } from 'react';
 import WelcomePanel from '../components/WelcomePanel';
+import SignUpInfoPanel from '../components/SignUpInfoPanel';
 import EmailStep from '../components/EmailStep';
 import SigninStep from '../components/SigninStep';
 import SignupStep from '../components/SignupStep';
 import TwoFactorStep from '../components/TwoFactorStep';
-import Dashboard from '../components/Dashboard';
+import SuccessStep from '../components/SuccessStep';
+import { getUserByEmail } from '../utils/authUtils';
+import { User } from '../types/auth';
+import HelpFloatingButton from '../components/HelpFloatingButton';
 
-const Index = () => {
-  const [authState, setAuthState] = useState<AuthState>({
+type AuthStep = 'welcome' | 'signin' | 'signup' | '2fa' | 'success';
+type ViewMode = 'welcome' | 'signup';
+
+const IndexPage = () => {
+  const [authState, setAuthState] = useState<{
+    step: AuthStep;
+    email: string;
+    user: User | null;
+    isExpanded: boolean;
+    view: ViewMode;
+  }>({
     step: 'welcome',
     email: '',
-    isSignup: false,
     user: null,
-    isExpanded: false
+    isExpanded: false,
+    view: 'welcome',
   });
+  const [startRightAnimation, setStartRightAnimation] = useState(false);
 
-  const handleEmailNext = async (email: string) => {
-    console.log('이메일 입력:', email);
-    
-    try {
-      const emailExists = await checkEmailExists(email);
-      
-      setAuthState(prev => ({
-        ...prev,
+  useEffect(() => {
+    // WelcomePanel 애니메이션(1초) 후 오른쪽 패널 애니메이션 시작
+    const timer = setTimeout(() => {
+      setStartRightAnimation(true);
+    }, 1000); 
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleShowSignup = () => {
+    setAuthState(s => ({
+      ...s,
+      step: 'signup',
+      view: 'signup',
+      email: '',
+      isExpanded: false,
+    }));
+  };
+
+  const handleEmailNext = async (email: string, isRegistered: boolean) => {
+    if (isRegistered) {
+      const user = await getUserByEmail(email);
+      setAuthState(s => ({
+        ...s,
+        step: 'signin',
         email,
-        isSignup: !emailExists,
-        step: emailExists ? 'signin' : 'signup',
-        isExpanded: true
+        user,
+        isExpanded: false,
+        view: 'welcome',
       }));
-    } catch (error) {
-      console.error('이메일 확인 중 오류:', error);
+    } else {
+      setAuthState(s => ({
+        ...s,
+        step: 'signup',
+        view: 'signup',
+        email,
+        isExpanded: false,
+      }));
     }
-  };
-
-  const handleSocialSignin = (provider: 'google') => {
-    console.log(`${provider} 소셜 로그인 시도`);
-    
-    // 소셜 로그인 성공 시뮬레이션
-    setTimeout(() => {
-      const mockEmail = `user@${provider}.com`;
-      setAuthState(prev => ({
-        ...prev,
-        email: mockEmail,
-        user: {
-          id: '1',
-          email: mockEmail,
-          name: `${provider} 사용자`,
-          createdAt: new Date()
-        },
-        step: 'twofa',
-        isExpanded: true
-      }));
-    }, 1000);
-  };
-
-  const handleSigninNext = () => {
-    console.log('로그인 완료, 2차 인증으로 이동');
-    setAuthState(prev => ({ ...prev, step: 'twofa' }));
-  };
-
-  const handleSignupNext = () => {
-    console.log('회원가입 완료, 2차 인증으로 이동');
-    setAuthState(prev => ({ ...prev, step: 'twofa' }));
-  };
-
-  const handleTwoFactorNext = () => {
-    console.log('2차 인증 완료, 대시보드로 이동');
-    setAuthState(prev => ({ ...prev, step: 'dashboard' }));
   };
 
   const handleBack = () => {
-    switch (authState.step) {
-      case 'signin':
-      case 'signup':
-        setAuthState(prev => ({ 
-          ...prev, 
-          step: 'welcome',
-          isExpanded: false,
-          email: ''
-        }));
-        break;
-      case 'twofa':
-        setAuthState(prev => ({ 
-          ...prev, 
-          step: authState.isSignup ? 'signup' : 'signin'
-        }));
-        break;
-    }
-  };
-
-  const handleLogout = () => {
-    console.log('로그아웃');
-    setAuthState({
+    setAuthState(s => ({
+      ...s,
       step: 'welcome',
       email: '',
-      isSignup: false,
       user: null,
-      isExpanded: false
-    });
+      isExpanded: false,
+      view: 'welcome',
+    }));
+  };
+
+  const handleSocialSignin = (provider: 'google') => {
+    console.log(`Signin with ${provider}`);
+  };
+
+  const handleSigninNext = () => {
+    setAuthState(s => ({ ...s, step: '2fa' }));
+  };
+
+  const handleSignupNext = () => {
+    setAuthState(s => ({ ...s, step: 'success' }));
+  };
+  
+  const handleTwoFactorNext = () => {
+    setAuthState(s => ({ ...s, step: 'success' }));
   };
 
   const handleForgotPassword = () => {
-    console.log('비밀번호 찾기 요청:', authState.email);
-    alert('비밀번호 재설정 링크가 이메일로 발송되었습니다. (데모)');
+    console.log('Forgot password for', authState.email);
   };
 
-  // 대시보드 단계에서는 전체 화면 렌더링
-  if (authState.step === 'dashboard') {
-    return (
-      <Dashboard 
-        userEmail={authState.email}
-        onLogout={handleLogout}
-      />
-    );
-  }
+  const renderStep = () => {
+    switch (authState.step) {
+      case 'welcome':
+        return (
+          <EmailStep
+            onNext={handleEmailNext}
+            onGoogleSignin={() => handleSocialSignin('google')}
+            onSignupClick={handleShowSignup}
+          />
+        );
+      case 'signin':
+        return (
+          <SigninStep
+            email={authState.email}
+            user={authState.user}
+            onBack={handleBack}
+            onNext={handleSigninNext}
+            onForgotPassword={handleForgotPassword}
+          />
+        );
+      case 'signup':
+        return (
+          <SignupStep
+            email={authState.email}
+            onBack={handleBack}
+            onNext={handleSignupNext}
+          />
+        );
+      case '2fa':
+        return (
+          <TwoFactorStep
+            email={authState.email}
+            onBack={handleBack}
+            onNext={handleTwoFactorNext}
+          />
+        );
+      case 'success':
+        return <SuccessStep onContinue={() => console.log("Continue to dashboard")} userEmail={authState.email} />;
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-900 font-noto">
-      <div className="min-h-screen flex">
-        {/* Welcome Panel - 50% 비율의 왼쪽 */}
-        <div 
-          className={`
-            transition-all duration-500 ease-in-out
-            ${authState.isExpanded 
-              ? 'w-0 overflow-hidden lg:w-0' 
-              : 'w-full lg:w-1/2'
-            }
-          `}
-        >
-          <WelcomePanel isVisible={!authState.isExpanded} />
+    <div className="flex flex-col lg:flex-row h-screen bg-slate-900">
+      {/* --- Left Panel (Desktop) --- */}
+      <div 
+        className={`
+          transition-all duration-500 ease-in-out
+          hidden 
+          ${authState.view === 'welcome' ? 'lg:w-1/2 lg:flex' : (authState.isExpanded ? 'lg:w-0' : 'lg:w-1/2 lg:flex')}
+          lg:flex-col lg:justify-center
+        `}
+      >
+        {authState.view === 'welcome' 
+          ? <WelcomePanel isVisible={true} />
+          : <SignUpInfoPanel isVisible={!authState.isExpanded} />
+        }
+      </div>
+      
+      {/* --- Right Panel (Content) --- */}
+      <div 
+        className={`
+          bg-zinc-900 flex flex-col transition-all duration-500 ease-in-out
+          w-full flex-grow
+          ${authState.view === 'welcome' ? 'lg:w-1/2' : (authState.isExpanded ? 'lg:w-full' : 'lg:w-1/2')}
+          transition-opacity duration-1000
+          ${startRightAnimation ? 'opacity-100' : 'opacity-0'}
+        `}
+      >
+        {/* --- Mobile Header --- */}
+        <div className="lg:hidden pt-16 px-8 pb-4 flex-shrink-0 text-center">
+          {authState.view === 'welcome' ? (
+            <div className="inline-flex items-center space-x-4">
+              <img src="/logo_symbol_color.png" alt="ITSCOPE PMO Logo" className="w-10 h-10" />
+              <h1 className="text-xl font-bold text-white">ITSCOPE PMO</h1>
+            </div>
+          ) : (
+            <div>
+              <h1 className="text-2xl font-bold text-white">Sign Up</h1>
+              <p className="text-zinc-400 mt-1">새로운 시작을 환영합니다!</p>
+            </div>
+          )}
         </div>
-
-        {/* Auth Panel - 50% 비율의 오른쪽 */}
-        <div 
-          className={`
-            bg-slate-800 flex flex-col justify-center transition-all duration-500 ease-in-out
-            ${authState.isExpanded 
-              ? 'w-full' 
-              : 'w-full lg:w-1/2'
-            }
-          `}
-        >
-          <div className="px-6 py-8 sm:px-10 lg:px-12 max-w-md mx-auto w-full">
-            {authState.step === 'welcome' && (
-              <EmailStep
-                onNext={handleEmailNext}
-                onGoogleSignin={() => handleSocialSignin('google')}
-              />
-            )}
-
-            {authState.step === 'signin' && (
-              <SigninStep
-                email={authState.email}
-                onBack={handleBack}
-                onNext={handleSigninNext}
-                onForgotPassword={handleForgotPassword}
-              />
-            )}
-
-            {authState.step === 'signup' && (
-              <SignupStep
-                email={authState.email}
-                onBack={handleBack}
-                onNext={handleSignupNext}
-              />
-            )}
-
-            {authState.step === 'twofa' && (
-              <TwoFactorStep
-                email={authState.email}
-                onBack={handleBack}
-                onNext={handleTwoFactorNext}
-              />
-            )}
-          </div>
+        
+        {/* --- Auth Steps Wrapper --- */}
+        <div className="flex-grow flex items-center justify-center lg:justify-start p-8">
+          {renderStep()}
         </div>
       </div>
+      {authState.step !== 'success' && <HelpFloatingButton />}
     </div>
   );
 };
 
-export default Index;
+export default IndexPage;

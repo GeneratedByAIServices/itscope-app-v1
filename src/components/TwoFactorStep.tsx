@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface TwoFactorStepProps {
   email: string;
@@ -47,117 +47,109 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ email, onBack, onNext }) 
 
   const handleResendCode = () => {
     console.log('인증 코드 재전송:', { email, method });
-    alert('인증 코드가 재전송되었습니다. (데모)');
+    toast.info('인증 코드가 재전송되었습니다.');
   };
 
   return (
-    <div className="space-y-6">
-      {/* 뒤로 가기 버튼 */}
-      <Button
-        onClick={onBack}
-        variant="ghost"
-        className="p-0 h-auto text-slate-400 hover:text-white"
-        disabled={isLoading}
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        비밀번호 입력으로
-      </Button>
-
-      {/* 헤더 */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">
-          2차 인증
-        </h2>
-        <p className="text-slate-400 mb-1">
-          {email}
-        </p>
-        <p className="text-slate-500 text-sm">
-          보안을 위해 추가 인증이 필요합니다
-        </p>
-      </div>
-
-      {/* 인증 방법 선택 */}
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant={method === 'totp' ? 'default' : 'outline'}
-            className={`h-12 ${method === 'totp' 
-              ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-              : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
-            }`}
-            onClick={() => setMethod('totp')}
-            disabled={isLoading}
-          >
-            앱 인증
-          </Button>
-          <Button
-            type="button"
-            variant={method === 'sms' ? 'default' : 'outline'}
-            className={`h-12 ${method === 'sms' 
-              ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-              : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
-            }`}
-            onClick={() => setMethod('sms')}
-            disabled={isLoading}
-          >
-            SMS 인증
-          </Button>
-        </div>
-
-        <p className="text-sm text-slate-500 text-center">
-          {method === 'totp' 
-            ? 'Google Authenticator 또는 Authy 앱에서 생성된 6자리 코드를 입력하세요'
-            : '휴대폰으로 전송된 6자리 인증 코드를 입력하세요'
-          }
-        </p>
-      </div>
-
-      {/* 인증 코드 입력 폼 */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Input
-            type="text"
-            placeholder="6자리 인증 코드"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="h-12 bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500 text-center text-lg tracking-widest"
-            disabled={isLoading}
-            autoFocus
-            maxLength={6}
-          />
-          {error && (
-            <p className="text-red-400 text-sm mt-2">{error}</p>
-          )}
-        </div>
-
+    <div className="w-full max-w-sm mx-auto lg:mx-0">
+      <div className="space-y-6">
+        {/* 뒤로 가기 버튼 */}
         <Button
-          type="submit"
-          className="w-full h-12 bg-blue-600 hover:bg-blue-700"
-          disabled={isLoading || code.length !== 6}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              메인 화면으로 이동 중...
-            </>
-          ) : (
-            '인증 완료'
-          )}
-        </Button>
-      </form>
-
-      {/* 재전송 버튼 */}
-      <div className="text-center">
-        <Button
-          type="button"
-          variant="link"
-          className="text-sm text-blue-400 hover:text-blue-300"
-          onClick={handleResendCode}
+          onClick={onBack}
+          variant="ghost"
+          className="p-0 h-auto text-zinc-400 hover:text-blue-400 hover:bg-zinc-800"
           disabled={isLoading}
         >
-          {method === 'sms' ? 'SMS 재전송' : '새 코드 요청'}
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          다른 아이디로 로그인
         </Button>
+
+        {/* 헤더 */}
+        <div className="text-center lg:text-left">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            2단계 인증
+          </h2>
+          <p className="text-zinc-400">
+            보안 강화를 위해 2단계 인증 코드를 입력하세요.
+          </p>
+        </div>
+
+        {/* 인증 방법 선택 */}
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant={method === 'totp' ? 'default' : 'outline'}
+              className={`h-12 ${method === 'totp' 
+                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-600'
+              }`}
+              onClick={() => setMethod('totp')}
+              disabled={isLoading}
+            >
+              앱 인증
+            </Button>
+            <Button
+              type="button"
+              variant={method === 'sms' ? 'default' : 'outline'}
+              className={`h-12 ${method === 'sms' 
+                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-600'
+              }`}
+              onClick={() => setMethod('sms')}
+              disabled={isLoading}
+            >
+              SMS 인증
+            </Button>
+          </div>
+
+          <p className="text-sm text-zinc-500 text-center lg:text-left">
+            {method === 'totp' 
+              ? 'Google Authenticator 또는 Authy 앱에서 생성된 6자리 코드를 입력하세요'
+              : '휴대폰으로 전송된 6자리 인증 코드를 입력하세요'
+            }
+          </p>
+        </div>
+
+        {/* 인증 코드 입력 폼 */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="6자리 인증 코드"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              className="h-12 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 focus:border-blue-500 focus:ring-blue-500 pr-24"
+              disabled={isLoading}
+              autoFocus
+              maxLength={6}
+            />
+            <Button
+              type="button"
+              variant="link"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-blue-400 hover:text-blue-300 disabled:text-zinc-500 disabled:cursor-not-allowed"
+              onClick={handleResendCode}
+              disabled={isLoading}
+            >
+              {method === 'sms' ? 'SMS 재전송' : '새 코드 요청'}
+            </Button>
+            {error && (
+              <p className="text-red-400 text-sm mt-2">{error}</p>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={isLoading || code.length !== 6}
+          >
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              '인증 완료'
+            )}
+          </Button>
+        </form>
       </div>
     </div>
   );

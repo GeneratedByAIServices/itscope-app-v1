@@ -1,0 +1,64 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Feature: User Authentication Flow
+
+## 1. Overview
+
+This document describes the user authentication feature, encompassing the sign-up flow for new users and the sign-in flow for existing users. The entire process is managed within the `IndexPage` component (`src/pages/Index.tsx`), which acts as a state machine, rendering different components based on the current authentication state.
+
+## 2. State Management
+
+The authentication flow is controlled by a central state object, `authState`, within the `IndexPage` component.
+
+-   **`step`**: Determines the current stage of the authentication process.
+    -   Type: `'welcome' | 'signin' | 'signup' | '2fa' | 'success'`
+    -   Initial Value: `'welcome'`
+-   **`view`**: Controls the content of the informational left panel.
+    -   Type: `'welcome' | 'signup'`
+    -   Initial Value: `'welcome'`
+-   **`email`**: Stores the user's email address entered in the initial step.
+-   **`user`**: Stores user data fetched from the backend (`getUserByEmail`) when a registered email is identified.
+
+## 3. Core Components
+
+| Component           | File Path                         | Role                                                                                              |
+| ------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `IndexPage`         | `src/pages/Index.tsx`             | Main state controller; orchestrates the entire authentication flow.                               |
+| `WelcomePanel`      | `src/components/WelcomePanel.tsx` | Left-side panel displayed during the initial (`welcome`) and `signin` flows.                    |
+| `SignUpInfoPanel`   | `src/components/SignUpInfoPanel.tsx` | Left-side panel displayed during the `signup` flow.                                             |
+| `EmailStep`         | `src/components/EmailStep.tsx`    | **Step 'welcome'**: Collects the user's email and determines the next step (sign-in or sign-up). |
+| `SigninStep`        | `src/components/SigninStep.tsx`   | **Step 'signin'**: Prompts an existing user for their password.                                     |
+| `SignupStep`        | `src/components/SignupStep.tsx`   | **Step 'signup'**: Collects information (name, password) for a new user registration.             |
+| `TwoFactorStep`     | `src/components/TwoFactorStep.tsx` | **Step '2fa'**: Prompts the user for a two-factor authentication code.                            |
+| `SuccessStep`       | `src/components/SuccessStep.tsx`  | **Step 'success'**: Displays a confirmation message upon successful sign-up or sign-in.           |
+
+## 4. Use Case Scenarios
+
+### Scenario 1: New User Registration
+
+This flow is initiated when a user enters an email that is **not** registered in the system.
+
+| Step | `authState.step` | `authState.view` | Displayed Component(s)             | User Action                                             | System Response                                                                                                     |
+| :--- | :--------------- | :--------------- | :--------------------------------- | :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------ |
+| 1    | `welcome`        | `welcome`        | `EmailStep`, `WelcomePanel`        | Enters a new email and clicks "Continue".               | `handleEmailNext` is called. The system detects an unregistered email. State changes to `step: 'signup'`, `view: 'signup'`. |
+| 2    | `signup`         | `signup`         | `SignupStep`, `SignUpInfoPanel`    | Fills in name, password, agrees to terms, clicks "Sign Up". | `handleSignupNext` is called. State changes to `step: 'success'`.                                                       |
+| 3    | `success`        | `signup`         | `SuccessStep`                      | Clicks "Continue to Dashboard".                         | Proceeds to the main application (currently logs to console).                                                       |
+
+### Scenario 2: Existing User Login
+
+This flow is initiated when a user enters an email that is **already** registered in the system.
+
+| Step | `authState.step` | `authState.view` | Displayed Component(s)        | User Action                                     | System Response                                                                                                                                |
+| :--- | :--------------- | :--------------- | :---------------------------- | :---------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `welcome`        | `welcome`        | `EmailStep`, `WelcomePanel`   | Enters a registered email and clicks "Continue". | `handleEmailNext` is called. `getUserByEmail` fetches user data. State changes to `step: 'signin'`. The `view` remains `welcome`.             |
+| 2    | `signin`         | `welcome`        | `SigninStep`, `WelcomePanel`  | Enters the correct password and clicks "Continue".     | `handleSigninNext` is called. State changes to `step: '2fa'`.                                                                                |
+| 3    | `2fa`            | `welcome`        | `TwoFactorStep`, `WelcomePanel` | Enters the 2FA code and clicks "Continue".          | `handleTwoFactorNext` is called. State changes to `step: 'success'`.                                                                         |
+| 4    | `success`        | `welcome`        | `SuccessStep`                 | Clicks "Continue to Dashboard".                 | Proceeds to the main application (currently logs to console).                                                                                  |
+
+### Scenario 3: Navigation
+
+-   **Back Action**: From `signin`, `signup`, or `2fa` steps, the user can click a "Back" button. This triggers `handleBack`, which resets the state to `step: 'welcome'`, clearing any entered data.
+-   **Forgot Password**: From the `signin` step, the user can click "Forgot password?". This triggers `handleForgotPassword`, which currently logs the action to the console.

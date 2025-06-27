@@ -1,4 +1,3 @@
-
 import { User } from '../types/auth';
 
 // 가짜 사용자 데이터베이스
@@ -28,6 +27,15 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
   console.log(`결과: ${exists ? '존재함' : '존재하지 않음'}`);
   
   return exists;
+};
+
+// 사용자 정보 조회 (가짜 구현)
+export const getUserByEmail = async (email: string): Promise<User | null> => {
+  // 실제 API 호출을 시뮬레이션
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const user = FAKE_USERS.find(u => u.email === email);
+  return user || null;
 };
 
 // 로그인 시도 (가짜 구현)
