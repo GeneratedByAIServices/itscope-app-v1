@@ -68,9 +68,9 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
             More Intelligent, More Capable
             {/* 프로젝트 관리의 새로운 시작 */}
           </h2>
-          <p className="text-zinc-300 text-lg leading-relaxed">
+          <div className="text-zinc-300 text-lg leading-relaxed">
             <NoticeList />
-          </p>
+          </div>
         </div>
 
       </div>
