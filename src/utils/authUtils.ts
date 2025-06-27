@@ -203,3 +203,44 @@ export const verifyTwoFactorCode = async (code: string): Promise<boolean> => {
   console.log(`(Mock) 2FA verification result: ${isValid}`);
   return isValid;
 };
+
+export const updateUserPassword = async (email: string, newPassword: string): Promise<{ success: boolean; error?: any }> => {
+    try {
+      if (!newPassword) {
+        throw new Error('New password cannot be empty.');
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+      const { error } = await supabase
+        .from('pm_user')
+        .update({ password_hash: hashedPassword })
+        .eq('email', email);
+  
+      if (error) {
+        console.error('Error updating password:', error);
+        throw error;
+      }
+  
+      return { success: true };
+    } catch (error) {
+      console.error('An unexpected error occurred during password update:', error);
+      return { success: false, error };
+    }
+  };
+
+export const getNotices = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('sys_notice')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            throw error;
+        }
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error fetching notices:', error);
+        return { success: false, error };
+    }
+};

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import logoSymbolColor from '/logo_symbol_color.png';
+import NoticeList from './NoticeList';
 
 interface WelcomePanelProps {
   isVisible: boolean;
@@ -44,7 +46,7 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
             className={`transition-all duration-500 ease-out ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
             style={{ transitionDelay: '0ms' }}
           >
-            <img src="/logo_symbol_color.png" alt="ITSCOPE PMO Logo" className="w-20 h-20 ml-auto mb-6" />
+            <img src={logoSymbolColor} alt="ITSCOPE PMO Logo" className="w-20 h-20 ml-auto mb-6" />
           </div>
           <div
             className={`transition-all duration-500 ease-out ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
@@ -67,7 +69,7 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
             {/* 프로젝트 관리의 새로운 시작 */}
           </h2>
           <p className="text-zinc-300 text-lg leading-relaxed">
-            
+            <NoticeList />
           </p>
         </div>
 

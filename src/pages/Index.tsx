@@ -6,12 +6,13 @@ import SigninStep from '../components/SigninStep';
 import SignupStep from '../components/SignupStep';
 import TwoFactorStep from '../components/TwoFactorStep';
 import SuccessStep from '../components/SuccessStep';
-import { getUserByEmail, checkEmailExists, attemptSignin, attemptSignup, getAllUsers } from '../utils/authUtils';
+import { getUserByEmail, checkEmailExists, attemptSignin, attemptSignup, getAllUsers, updateUserPassword, getNotices } from '../utils/authUtils';
 import { PMUser } from '../types/auth';
 import HelpFloatingButton from '../components/HelpFloatingButton';
 import { toast } from 'sonner';
+import FindPasswordStep from '../components/FindPasswordStep';
 
-type AuthStep = 'welcome' | 'signin' | 'signup' | '2fa' | 'success';
+type AuthStep = 'welcome' | 'signin' | 'signup' | '2fa' | 'success' | 'findPassword';
 type ViewMode = 'welcome' | 'signup';
 
 const IndexPage = () => {
@@ -53,6 +54,39 @@ const IndexPage = () => {
       setStartRightAnimation(true);
     }, 1000); 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchNotices = async () => {
+      const { success, data: notices } = await getNotices();
+      if (success && notices) {
+        console.log("--- 전체 공지사항 목록 ---");
+        console.table(notices);
+        
+        const now = new Date();
+        const publishedNotices = notices.filter(n => {
+          // 1. is_published가 true여야 합니다.
+          if (!n.is_published) {
+            return false;
+          }
+
+          // 2. 오늘 날짜가 게시 기간 내에 있어야 합니다.
+          const startDate = n.publish_start_dt ? new Date(n.publish_start_dt) : null;
+          const endDate = n.publish_end_dt ? new Date(n.publish_end_dt) : null;
+
+          // 시작일이 없거나, 오늘이 시작일 이후여야 함
+          const isAfterStartDate = !startDate || now >= startDate;
+          // 종료일이 없거나, 오늘이 종료일 이전이어야 함
+          const isBeforeEndDate = !endDate || now <= endDate;
+          
+          return isAfterStartDate && isBeforeEndDate;
+        });
+
+        console.log(`게시 대상 공지 (오늘 날짜 기준): ${publishedNotices.length}건`);
+      }
+    };
+
+    fetchNotices();
   }, []);
 
   const handleShowSignup = () => {
@@ -172,7 +206,7 @@ const IndexPage = () => {
             user={authState.user}
             onBack={handleBack}
             onSignin={handleSignin}
-            onForgotPassword={() => toast.info("비밀번호 찾기 기능은 아직 구현되지 않았습니다.")}
+            onForgotPassword={() => setAuthState(s => ({ ...s, step: 'findPassword' }))}
           />
         );
       case 'signup':
@@ -194,6 +228,34 @@ const IndexPage = () => {
         );
       case 'success':
         return <SuccessStep user={authState.user} onContinue={() => console.log("Redirecting to dashboard...")} />;
+      case 'findPassword':
+        return (
+          <FindPasswordStep
+            email={authState.email}
+            setEmail={(email) => setAuthState(s => ({ ...s, email }))}
+            onBack={() => setAuthState(s => ({ ...s, step: 'signin' }))}
+            onPasswordChange={async (newPassword) => {
+              try {
+                console.log('Attempting to change password for:', authState.email);
+                const { success, error } = await updateUserPassword(authState.email, newPassword);
+
+                if (success) {
+                  toast.success("비밀번호가 성공적으로 변경되었습니다.", {
+                    description: "새 비밀번호로 로그인해주세요."
+                  });
+                  setAuthState(s => ({ ...s, step: 'signin' }));
+                } else {
+                  throw error;
+                }
+              } catch (error) {
+                toast.error("비밀번호 변경 중 오류가 발생했습니다.", {
+                  description: "문제가 지속되면 관리자에게 문의하세요."
+                });
+                console.error("Password change failed:", error);
+              }
+            }}
+          />
+        );
       default:
         return null;
     }

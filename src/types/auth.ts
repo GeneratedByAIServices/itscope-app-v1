@@ -16,6 +16,7 @@ export interface PMUser {
   account_type_code_id: number | null;
   two_factor_method_code_id: number | null;
   work_status_code_id: number | null;
+  user_id: string;
 }
 
 export interface User {
@@ -38,3 +39,5 @@ export interface TwoFactorMethod {
   label: string;
   description: string;
 }
+
+export type AuthStep = 'email' | 'signup' | 'signin' | 'twoFactor' | 'success' | 'findPassword';

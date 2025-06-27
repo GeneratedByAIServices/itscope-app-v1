@@ -16,9 +16,9 @@ graph TD
     F --> G["2단계 인증<br/>TwoFactorStep.tsx"];
     G --> H["로그인 완료<br/>SuccessStep.tsx"];
 
-    classDef default fill:#fff,stroke:#333,stroke-width:2px;
-    classDef startend fill:#e8f5e9,stroke:#333,stroke-width:1px;
-    classDef decision fill:#fff9c4,stroke:#333,stroke-width:1px;
+    classDef default fill:#fff,stroke:#333,stroke-width:2px,color:#000;
+    classDef startend fill:#e8f5e9,stroke:#333,stroke-width:1px,color:#000;
+    classDef decision fill:#fff9c4,stroke:#333,stroke-width:1px,color:#000;
     
     class A,E,H startend;
     class C decision;

@@ -98,7 +98,11 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, user, onBack, onSignin, 
               로그인 상태 유지
             </label>
           </div>
-          <Button onClick={onForgotPassword} variant="link" className="text-sm text-blue-400 hover:text-blue-300">
+          <Button
+            variant="link"
+            className="text-sm text-blue-400 hover:text-blue-300 hover:no-underline"
+            onClick={onForgotPassword}
+          >
             비밀번호를 잊으셨나요?
           </Button>
         </div>
