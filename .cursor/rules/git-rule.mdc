@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+1. 프로젝트 루트 디렉토리에 Git_Log.md 없으면 생성
+
+
+2. Git 관련 작업을 수행할 때 마다, commit 단위로 구체적인 타임스탬프와 내용 요약 (commit 메시지보다 자세하게)하여 로그 작성

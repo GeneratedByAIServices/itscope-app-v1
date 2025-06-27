@@ -18,7 +18,6 @@ const HelpFloatingButton = () => {
   
   const handleMenuClick = (menuName: string) => {
     toast.info(`${menuName} 메뉴를 선택했습니다.`);
-    setIsOpen(false);
   };
 
   const containerVariants = {

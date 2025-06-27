@@ -171,7 +171,7 @@ const IndexPage = () => {
         `}
       >
         {/* --- Mobile Header --- */}
-        <div className="lg:hidden pt-16 px-8 pb-4 flex-shrink-0 text-center">
+        <div className="lg:hidden pt-24 px-8 pb-8 flex-shrink-0 text-center">
           {authState.view === 'welcome' ? (
             <div className="inline-flex items-center space-x-4">
               <img src="/logo_symbol_color.png" alt="ITSCOPE PMO Logo" className="w-10 h-10" />
