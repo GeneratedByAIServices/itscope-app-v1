@@ -34,7 +34,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 215 20.2% 65.1%;
 
     --radius: 0.5rem;
 
@@ -103,5 +103,15 @@
     @apply bg-background text-foreground;
     font-family: 'Noto Sans KR', sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* 브라우저 자동 완성 스타일 오버라이드 (다크 모드용) */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+      -webkit-text-fill-color: #ffffff !important; /* 글자색 강제 지정 */
+      -webkit-box-shadow: 0 0 0 30px #27272a inset !important; /* 배경색 강제 지정 (zinc-800) */
+      transition: background-color 5000s ease-in-out 0s; /* 배경색 변경 트랜지션 지연 */
   }
 }

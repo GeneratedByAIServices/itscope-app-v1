@@ -1,0 +1,87 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Rule: Supabase SQL Operation Logging Protocol
+
+## 1. Objective
+To maintain a comprehensive, chronological, and immutable log of all SQL operations that alter the Supabase database schema or data. This log (`DB_SQL_LOG.md`) serves as the single source of truth for all database changes executed via the AI agent.
+
+*Explanation in Logs should be written in Korean.
+
+## 2. Trigger Conditions
+This rule is **MANDATORY** and is activated **IMMEDIATELY AFTER** the successful execution of the following Supabase MCP tools:
+- `mcp_supabase_apply_migration`
+- `mcp_supabase_execute_sql`
+
+## 3. Execution Protocol
+Upon successful execution of a trigger tool, the agent **MUST** perform the following steps sequentially and without exception:
+
+1.  **Identify Log File**: The target log file is `DB_SQL_LOG.md` located in the project root directory.
+
+2.  **Check for Existence**:
+    -   If `DB_SQL_LOG.md` does not exist, it **MUST** be created with the standard header defined in Section 4.
+    -   If the file exists, proceed to the next step.
+
+3.  **Construct Log Entry**: A new log entry **MUST** be constructed precisely following the format defined in Section 5.
+    -   `[Sequential Log Number]`: Increment the last log number in the file by one. The first entry is `1`.
+    -   `[Migration Name or Operation ID]`: Use the `name` parameter from `mcp_supabase_apply_migration`. For `mcp_supabase_execute_sql`, use a descriptive, snake_case ID that summarizes the operation (e.g., `insert_initial_code_data`).
+    -   `[Timestamp]`: The Coordinated Universal Time (UTC) of the operation's execution in `YYYY-MM-DD HH:MM:SS` format.
+    -   `[Description]`: A concise, one-sentence summary in **Korean** explaining the purpose of the SQL operation.
+    -   `[SQL Query]`: The exact, unmodified SQL string passed to the `query` parameter of the tool call, enclosed in a `sql` code block.
+
+4.  **Append to Log File**:
+    -   A `---` horizontal rule **MUST** be added before the new entry to separate it from the previous one.
+    -   The newly constructed log entry **MUST** be appended to the **end** of `DB_SQL_LOG.md`, ensuring the log remains chronological.
+
+## 4. Log File Header (for new files)
+If `DB_SQL_LOG.md` is being created for the first time, it **MUST** start with the following content:
+
+```markdown
+# Supabase 데이터베이스 스키마 변경 로그
+
+이 문서는 `Supabase MCP`를 통해 실행된 모든 데이터베이스 스키마 관련 SQL 쿼리를 기록합니다.
+실행된 순서대로 기록되며, 가장 최근의 변경 내역이 맨 아래에 위치합니다.
+```
+
+## 5. Log Entry Format Template
+Each log entry appended to the file **MUST** adhere strictly to the following Markdown template. No deviation is permitted.
+
+```markdown
+---
+
+### [Sequential Log Number]. `[Migration Name or Operation ID]` ([Timestamp])
+
+**설명:** [Description]
+
+`sql
+[SQL Query]
+`
+```
+
+## 6. Example
+**Scenario**: The agent executes `mcp_supabase_apply_migration` with `name: 'create_new_feature_table'`.
+
+**Resulting Log Entry in `DB_SQL_LOG.md`**:
+
+```markdown
+---
+
+### 5. `create_new_feature_table` (2024-08-01 12:34:56)
+
+**설명:** 신규 기능 A를 지원하기 위한 `feature_a` 테이블을 생성합니다.
+
+`sql
+CREATE TABLE public.feature_a (
+  id serial PRIMARY KEY,
+  feature_name text NOT NULL,
+  is_active boolean DEFAULT true
+);
+`
+```
+
+
+
+
+

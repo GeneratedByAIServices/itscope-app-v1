@@ -13,6 +13,11 @@
 - **State Management**: TanStack Query
 - **Form Handling**: React Hook Form
 - **Schema Validation**: Zod
+- **인증**: Supabase Auth (Email/Password, Social Login), JWT
+- **상태 관리**: React Hooks (useState, useContext)
+- **UI 라이브러리**: Radix UI, Lucide React
+- **폼 처리**: (직접 구현)
+- **알림**: Sonner (Toast notifications)
 
 ## 시작하기
 
@@ -43,9 +48,12 @@ npm run dev
 
 ## 주요 기능
 
-- **사용자 회원가입**: 이메일, 이름, 비밀번호를 사용하여 새로운 사용자를 등록합니다.
-- **사용자 로그인**: 등록된 사용자가 시스템에 접근할 수 있습니다.
-- **UI 컴포넌트**: `shadcn/ui`를 활용한 다양한 UI 요소(Button, Input, Card 등)가 구현되어 있습니다.
+- **통합 인증 시스템**: 이메일/비밀번호, Google, GitHub를 통한 간편한 로그인 및 회원가입
+- **고도화된 인증 흐름**: 사용자의 가입 여부에 따라 로그인 또는 회원가입으로 유도하는 동적 UI/UX 제공
+- **실시간 이메일 중복 확인**: 회원가입 시 이메일을 입력하면 실시간으로 가입 여부를 확인하고 즉시 로그인 전환을 지원
+- **안전한 비밀번호 관리**: `bcryptjs`를 사용한 비밀번호 해싱으로 사용자 정보 보안 강화
+- **반응형 디자인**: 데스크톱과 모바일 환경에 최적화된 UI 제공
+- **도움말 및 지원**: 법적 고지(이용약관, 개인정보처리방침) 모달 및 문의 채널 제공
 
 ## 프로젝트 구조
 
@@ -70,3 +78,6 @@ itscope-app-v1/
 - `npm run build`: 프로덕션용으로 애플리케이션을 빌드합니다.
 - `npm run lint`: ESLint로 코드 스타일을 검사합니다.
 - `npm run preview`: 프로덕션 빌드를 로컬에서 미리 봅니다.
+
+- `VITE_SUPABASE_URL`: Supabase 프로젝트 URL
+- `VITE_SUPABASE_ANON_KEY`: Supabase 프로젝트 Anon Key

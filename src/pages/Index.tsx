@@ -6,9 +6,10 @@ import SigninStep from '../components/SigninStep';
 import SignupStep from '../components/SignupStep';
 import TwoFactorStep from '../components/TwoFactorStep';
 import SuccessStep from '../components/SuccessStep';
-import { getUserByEmail } from '../utils/authUtils';
-import { User } from '../types/auth';
+import { getUserByEmail, checkEmailExists, attemptSignin, attemptSignup, getAllUsers } from '../utils/authUtils';
+import { PMUser } from '../types/auth';
 import HelpFloatingButton from '../components/HelpFloatingButton';
+import { toast } from 'sonner';
 
 type AuthStep = 'welcome' | 'signin' | 'signup' | '2fa' | 'success';
 type ViewMode = 'welcome' | 'signup';
@@ -17,7 +18,7 @@ const IndexPage = () => {
   const [authState, setAuthState] = useState<{
     step: AuthStep;
     email: string;
-    user: User | null;
+    user: PMUser | null;
     isExpanded: boolean;
     view: ViewMode;
   }>({
@@ -28,6 +29,23 @@ const IndexPage = () => {
     view: 'welcome',
   });
   const [startRightAnimation, setStartRightAnimation] = useState(false);
+
+  useEffect(() => {
+    const fetchAndLogUsers = async () => {
+      console.log('--- 초기 사용자 정보 로드 ---');
+      const users = await getAllUsers();
+      if (users) {
+        console.log('사전 등록된 사용자 목록:');
+        console.table(users.map(u => ({ email: u.email, name: u.name })));
+      } else {
+        console.log('사용자 정보를 불러오는 데 실패했습니다.');
+      }
+      console.log('임시 비밀번호 (테스트용):', 'password123');
+      console.log('---------------------------');
+    };
+
+    fetchAndLogUsers();
+  }, []);
 
   useEffect(() => {
     // WelcomePanel 애니메이션(1초) 후 오른쪽 패널 애니메이션 시작
@@ -47,7 +65,7 @@ const IndexPage = () => {
     }));
   };
 
-  const handleEmailNext = async (email: string, isRegistered: boolean) => {
+  const handleNextFromEmail = async (email: string, isRegistered: boolean) => {
     if (isRegistered) {
       const user = await getUserByEmail(email);
       setAuthState(s => ({
@@ -55,17 +73,10 @@ const IndexPage = () => {
         step: 'signin',
         email,
         user,
-        isExpanded: false,
-        view: 'welcome',
+        view: 'welcome' 
       }));
     } else {
-      setAuthState(s => ({
-        ...s,
-        step: 'signup',
-        view: 'signup',
-        email,
-        isExpanded: false,
-      }));
+      setAuthState(s => ({ ...s, step: 'signup', email, user: null }));
     }
   };
 
@@ -81,23 +92,67 @@ const IndexPage = () => {
   };
 
   const handleSocialSignin = (provider: 'google') => {
-    console.log(`Signin with ${provider}`);
+    toast.info(`${provider} 로그인은 추후 구현될 기능입니다.`);
+    setAuthState(s => ({ ...s, step: '2fa', email: 'social_user@example.com' }));
   };
 
-  const handleSigninNext = () => {
-    setAuthState(s => ({ ...s, step: '2fa' }));
+  const handleSwitchToLogin = async (email: string) => {
+    const user = await getUserByEmail(email);
+    setAuthState(s => ({
+      ...s,
+      step: 'signin',
+      email,
+      user,
+      view: 'welcome',
+    }));
   };
 
-  const handleSignupNext = () => {
+  const handleSignin = async (password: string) => {
+    const { user, error } = await attemptSignin(authState.email, password);
+    if (user) {
+      toast.success("로그인 되었습니다.", {
+        description: "2단계 인증을 진행합니다."
+      });
+      setAuthState(s => ({ ...s, step: '2fa', user }));
+    } else {
+      console.error("Signin failed:", error);
+      toast.error("로그인에 실패했습니다.", {
+        description: "이메일과 비밀번호를 확인해주세요."
+      });
+    }
+  };
+
+  const handleSignup = async (data: { email: string; password: string; name: string; }) => {
+    const { email, password, name } = data;
+    // 최종 방어 로직: 가입 직전에 다시 한번 이메일 존재 여부를 서버에 확인
+    const emailExists = await checkEmailExists(email);
+    if (emailExists) {
+        toast.error("이미 가입된 이메일입니다. 로그인 화면으로 이동합니다.");
+        const user = await getUserByEmail(email);
+        // 로그인 단계로 강제 전환
+        setAuthState(s => ({ ...s, step: 'signin', email, user, view: 'welcome' }));
+        return;
+    }
+
+    const { user, error } = await attemptSignup({ email, password, name });
+    if (user) {
+      toast.success("회원가입이 완료되었습니다.", {
+        description: "로그인을 위해 2단계 인증을 진행합니다."
+      });
+      setAuthState(s => ({ ...s, step: '2fa', user }));
+    } else {
+      console.error("Signup failed:", error);
+      toast.error(error?.message || "회원가입 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handle2FA = () => {
+    // 2FA 성공 후 최종 상태
     setAuthState(s => ({ ...s, step: 'success' }));
   };
-  
-  const handleTwoFactorNext = () => {
-    setAuthState(s => ({ ...s, step: 'success' }));
-  };
 
-  const handleForgotPassword = () => {
-    console.log('Forgot password for', authState.email);
+  const handleEmailCheck = async (email: string) => {
+    return await checkEmailExists(email);
   };
 
   const renderStep = () => {
@@ -105,9 +160,9 @@ const IndexPage = () => {
       case 'welcome':
         return (
           <EmailStep
-            onNext={handleEmailNext}
+            onNext={handleNextFromEmail}
             onGoogleSignin={() => handleSocialSignin('google')}
-            onSignupClick={handleShowSignup}
+            onSignupClick={() => setAuthState(s => ({ ...s, step: 'signup', user: null }))}
           />
         );
       case 'signin':
@@ -116,8 +171,8 @@ const IndexPage = () => {
             email={authState.email}
             user={authState.user}
             onBack={handleBack}
-            onNext={handleSigninNext}
-            onForgotPassword={handleForgotPassword}
+            onSignin={handleSignin}
+            onForgotPassword={() => toast.info("비밀번호 찾기 기능은 아직 구현되지 않았습니다.")}
           />
         );
       case 'signup':
@@ -125,19 +180,20 @@ const IndexPage = () => {
           <SignupStep
             email={authState.email}
             onBack={handleBack}
-            onNext={handleSignupNext}
+            onSignup={handleSignup}
+            onSwitchToLogin={handleSwitchToLogin}
           />
         );
       case '2fa':
         return (
           <TwoFactorStep
-            email={authState.email}
+            user={authState.user}
             onBack={handleBack}
-            onNext={handleTwoFactorNext}
+            onVerify={handle2FA}
           />
         );
       case 'success':
-        return <SuccessStep onContinue={() => console.log("Continue to dashboard")} userEmail={authState.email} />;
+        return <SuccessStep user={authState.user} onContinue={() => console.log("Redirecting to dashboard...")} />;
       default:
         return null;
     }

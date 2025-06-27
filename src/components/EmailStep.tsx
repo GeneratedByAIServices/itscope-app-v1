@@ -68,15 +68,15 @@ const EmailStep: React.FC<EmailStepProps> = ({ onNext, onGoogleSignin, onSignupC
     }
   }, []);
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateEmail(email)) {
       setError('올바른 이메일 주소를 입력해주세요.');
       return;
     }
-    setError('');
     setIsLoading(true);
     
+    // 이메일 체크가 진행 중이면 끝날 때까지 기다립니다.
     if (isCheckingEmail) {
       await new Promise(resolve => {
         const interval = setInterval(() => {
@@ -94,6 +94,7 @@ const EmailStep: React.FC<EmailStepProps> = ({ onNext, onGoogleSignin, onSignupC
       localStorage.removeItem('rememberedEmail');
     }
 
+    // 최종적으로 isRegistered 상태를 확인하고 onNext를 호출합니다.
     const finalIsRegistered = isRegistered ?? await checkEmailExists(email);
 
     setIsLoading(false);
@@ -134,7 +135,7 @@ const EmailStep: React.FC<EmailStepProps> = ({ onNext, onGoogleSignin, onSignupC
         </div>
 
         <div>
-          <form onSubmit={handleEmailSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="relative">
               <Input
                 id="email"
@@ -148,7 +149,7 @@ const EmailStep: React.FC<EmailStepProps> = ({ onNext, onGoogleSignin, onSignupC
                   setEmail(e.target.value);
                   if (error) setError('');
                 }}
-                className="h-12 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 pr-10"
+                className={`h-12 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-500 pr-10 ${error ? 'border-red-500' : ''}`}
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 {isCheckingEmail ? (
