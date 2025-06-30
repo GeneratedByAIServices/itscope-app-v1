@@ -244,3 +244,56 @@ export const getNotices = async () => {
         return { success: false, error };
     }
 };
+
+export const incrementNoticeViewCount = async (noticeId: number) => {
+    try {
+        const { error } = await supabase.rpc('increment_view_count', { notice_id_arg: noticeId });
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('Error incrementing view count:', error);
+        return { success: false, error };
+    }
+};
+
+export const updateLastLogin = async (email: string) => {
+  try {
+    const { error } = await supabase.rpc('update_last_login', { user_email: email });
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error updating last login:', error);
+  }
+};
+
+export const incrementFailedLoginAttempts = async (email: string) => {
+  try {
+    const { error } = await supabase.rpc('increment_failed_login_attempts', { user_email: email });
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error incrementing failed login attempts:', error);
+  }
+};
+
+type LogUserActivityOptions = {
+  userId: string | null;
+  eventCategory: 'Authentication' | 'Account' | 'Profile';
+  eventAction: string;
+  isSuccess: boolean;
+  metadata?: Record<string, any>;
+}
+
+export const logUserActivity = async (options: LogUserActivityOptions) => {
+  const { userId, eventCategory, eventAction, isSuccess, metadata } = options;
+  try {
+    const { error } = await supabase.rpc('insert_user_account_log', {
+      p_user_id: userId,
+      p_event_category: eventCategory,
+      p_event_action: eventAction,
+      p_is_success: isSuccess,
+      p_metadata: metadata,
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error logging user activity:', error);
+  }
+};

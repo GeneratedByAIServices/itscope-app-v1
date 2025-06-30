@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import logoSymbolColor from '/logo_symbol_color.png';
-import NoticeList from './NoticeList';
+import NoticeList, { NoticeListProps } from './NoticeList';
 
 interface WelcomePanelProps {
   isVisible: boolean;
+  noticeListProps: NoticeListProps;
 }
 
-const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
+const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible, noticeListProps }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
@@ -17,13 +18,6 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
       setIsAnimating(false);
     }
   }, [isVisible]);
-
-  const featureItems = [
-    { text: '효과적인 프로젝트 업무 파악', color: 'bg-blue-500' },
-    { text: 'PMO를 위한 가시적인 프로젝트 모니터링', color: 'bg-purple-500' },
-    { text: '업무 표준 기반의 체계적인 SDLC 관리', color: 'bg-green-500' },
-    { text: '사용자 친화적 업무함 및 커뮤니케이션', color: 'bg-yellow-500' },
-  ];
 
   return (
     <div 
@@ -58,7 +52,7 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
           </div>
         </div>
 
-        {/* Welcome 메시지 */}
+        {/* Welcome 메시지 & 공지사항 */}
         <div 
           className={`space-y-3 transition-all duration-500 ease-out ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           style={{ transitionDelay: '300ms' }}
@@ -66,18 +60,16 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible }) => {
           <h2 className="text-xl font-semibold text-white">
             Make Your Project Management Office<br/>
             More Intelligent, More Capable
-            {/* 프로젝트 관리의 새로운 시작 */}
           </h2>
-          <div className="text-zinc-300 text-lg leading-relaxed">
-            <NoticeList />
+          <div className="text-zinc-300 text-lg leading-relaxed mt-6">
+            <NoticeList {...noticeListProps} />
           </div>
         </div>
-
       </div>
 
       {/* 장식적 요소 */}
-      <div className="absolute top-16 right-16 w-40 h-40 border border-zinc-800 rounded-full opacity-10" />
-      <div className="absolute bottom-16 left-16 w-24 h-24 border border-zinc-700 rounded-full opacity-20" />
+      <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/50 to-transparent rounded-full filter blur-3xl opacity-50" />
+      <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-tl from-sky-900/50 to-transparent rounded-full filter blur-3xl opacity-50" />
     </div>
   );
 };

@@ -380,6 +380,7 @@ INSERT INTO public.pm_code (group_id, code_value, code_name, sort_order) VALUES
       ('[이벤트] 신규 가입 이벤트 안내 (미게시)', '신규 가입자분들께 특별한 혜택을 드리는 이벤트를 준비 중입니다. 곧 공개될 예정이니 기대해주세요!', first_user_id, '이벤트', false, false, 10),
       ('긴급 장애 복구 완료 안내 (미게시)', '오늘 오전에 발생했던 로그인 장애 문제가 모두 복구되었습니다. 현재 정상적으로 서비스 이용이 가능합니다.', first_user_id, '장애', false, false, 5);
   END $$;
+  ```
 
 ### 2024-05-23: 공지사항 테이블 스키마 수정 및 데이터 업데이트
 
@@ -443,4 +444,151 @@ INSERT INTO public.pm_code (group_id, code_value, code_name, sort_order) VALUES
       event_start_dt = '2025-06-26 09:00:00+09',
       event_end_dt = '2025-06-26 10:00:00+09'
   WHERE notice_type = '장애';
-  ``` 
+  ```
+
+### 2024-07-25: 인증 로그 테이블 생성
+
+- **사유**: `pm_user` 테이블에 사용자 활동과 관련된 모든 로그를 직접 저장하는 대신, 별도의 `pm_user_auth_log` 테이블을 생성하여 인증 관련 이벤트를 관리합니다. 이를 통해 사용자 테이블의 비대화를 방지하고 데이터 무결성을 높입니다.
+- **마이그레이션 이름**: `create_auth_log_table`
+- **SQL**:
+  ```sql
+  -- 사용자 인증 로그 테이블 생성
+  CREATE TABLE public.pm_user_auth_log (
+    log_id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    event_timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    details JSONB
+  );
+
+  -- user_id에 대한 외래 키 제약 조건 추가 (참조 무결성 유지)
+  ALTER TABLE public.pm_user_auth_log
+  ADD CONSTRAINT fk_user_id
+  FOREIGN KEY (user_id) REFERENCES public.pm_user(id) ON DELETE CASCADE;
+  ```
+
+---
+
+### 2024-07-26: 공지사항(sys_notice) 테이블 생성
+
+- **사유**: 시스템 공지사항 기능을 구현하기 위해 `sys_notice` 테이블을 생성합니다.
+- **마이그레이션 이름**: `create_sys_notice_table`
+- **SQL**:
+  ```sql
+  CREATE TABLE public.sys_notice (
+      notice_id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      author_id UUID REFERENCES public.pm_user(id),
+      created_dt TIMESTAMPTZ DEFAULT NOW(),
+      updated_dt TIMESTAMPTZ DEFAULT NOW(),
+      publish_start_dt TIMESTAMPTZ,
+      publish_end_dt TIMESTAMPTZ,
+      is_popup BOOLEAN DEFAULT FALSE,
+      view_count INTEGER DEFAULT 0,
+      category VARCHAR(50),
+      event_start_dt TIMESTAMPTZ,
+      event_end_dt TIMESTAMPTZ
+  );
+  ```
+
+---
+
+### 2024-07-26: 공지사항(sys_notice) 테이블 RLS 정책 추가
+
+- **사유**: 모든 사용자가 공지사항 목록을 조회할 수 있도록 `SELECT` 권한을 부여하는 RLS 정책을 추가합니다.
+- **마이그레이션 이름**: `enable_read_for_all_on_sys_notice`
+- **SQL**:
+  ```sql
+  ALTER TABLE public.sys_notice ENABLE ROW LEVEL SECURITY;
+
+  CREATE POLICY "Allow all users to read notices"
+  ON public.sys_notice
+  FOR SELECT
+  USING (true);
+  ```
+
+---
+
+### 2024-07-29: 공지사항 조회수 증가 RPC 함수 생성
+
+- **사유**: 사용자가 공지사항을 조회할 때마다 `view_count`를 안전하게 1씩 증가시키기 위한 데이터베이스 함수를 생성합니다.
+- **마이그레이션 이름**: `create_increment_view_count_function`
+- **SQL**:
+  ```sql
+  CREATE OR REPLACE FUNCTION increment_view_count(p_notice_id INTEGER)
+  RETURNS void AS $$
+  BEGIN
+    UPDATE sys_notice
+    SET view_count = view_count + 1
+    WHERE notice_id = p_notice_id;
+  END;
+  $$ LANGUAGE plpgsql;
+  ```
+
+---
+
+### 2024-07-31: 로그인 시도 관련 RPC 함수 2개 생성
+
+- **사유**: 로그인 성공 및 실패 시 사용자 정보를 안전하게 업데이트하기 위한 RPC 함수 2개를 생성합니다.
+- **마이그레이션 이름**: `create_login_attempt_rpc_functions`
+- **SQL**:
+  ```sql
+  -- 로그인 성공 시 last_login_at 업데이트 및 실패 횟수 초기화
+  CREATE OR REPLACE FUNCTION update_last_login(p_user_id UUID)
+  RETURNS VOID AS $$
+  UPDATE public.pm_user
+  SET
+    last_login_at = NOW(),
+    failed_login_attempts = 0
+  WHERE id = p_user_id;
+  $$ LANGUAGE sql;
+
+  -- 로그인 실패 시 failed_login_attempts 1 증가
+  CREATE OR REPLACE FUNCTION increment_failed_login_attempts(p_user_id UUID)
+  RETURNS VOID AS $$
+  UPDATE public.pm_user
+  SET failed_login_attempts = failed_login_attempts + 1
+  WHERE id = p_user_id;
+  $$ LANGUAGE sql;
+  ```
+
+---
+
+### 2024-07-31: 사용자 계정 활동 로그 테이블 및 RPC 함수 생성
+
+- **사유**: 기존 `pm_user_auth_log`를 대체하여, 인증뿐만 아니라 다양한 계정 활동(로그인, 로그아웃, 2FA, 회원가입 등)을 기록하기 위한 포괄적인 로그 시스템을 구축합니다.
+- **마이그레이션 이름**: `create_user_account_log_system`
+- **SQL**:
+  ```sql
+  -- 1. 기존 인증 로그 테이블 삭제
+  DROP TABLE IF EXISTS public.pm_user_auth_log;
+
+  -- 2. 새로운 계정 활동 로그 테이블 생성
+  CREATE TABLE public.pm_user_account_log (
+      log_id BIGSERIAL PRIMARY KEY,
+      user_id UUID NOT NULL,
+      activity_type TEXT NOT NULL,
+      ip_address TEXT,
+      user_agent TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      details JSONB
+  );
+
+  -- 3. 로그 삽입을 위한 RPC 함수 생성
+  CREATE OR REPLACE FUNCTION insert_user_account_log(
+      p_user_id UUID,
+      p_activity_type TEXT,
+      p_ip_address TEXT,
+      p_user_agent TEXT,
+      p_details JSONB
+  )
+  RETURNS void AS $$
+  BEGIN
+      INSERT INTO public.pm_user_account_log (user_id, activity_type, ip_address, user_agent, details)
+      VALUES (p_user_id, p_activity_type, p_ip_address, p_user_agent, p_details);
+  END;
+  $$ LANGUAGE plpgsql;
+  ```

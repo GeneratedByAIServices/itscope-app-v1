@@ -96,14 +96,14 @@ ITSCOPE PMO는 다음의 목적을 위하여 개인정보를 처리합니다:
 
   return (
     <Dialog open={type !== null} onOpenChange={() => onClose()}>
-      <DialogContent className="max-w-2xl max-h-[80vh] bg-zinc-900 text-white border-zinc-800">
+      <DialogContent className="w-11/12 sm:max-w-2xl max-h-[80vh] bg-zinc-900 text-white border-zinc-800">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {type === 'terms' ? '이용약관' : '개인정보처리방침'}
           </DialogTitle>
         </DialogHeader>
         <div className="overflow-y-auto max-h-[60vh] pr-4">
-          <pre className="whitespace-pre-wrap text-sm text-zinc-300 leading-relaxed font-sans">
+          <pre className="whitespace-pre-wrap text-sm text-zinc-300 leading-relaxed font-noto">
             {type === 'terms' ? termsContent : privacyContent}
           </pre>
         </div>

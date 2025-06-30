@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -104,7 +103,11 @@ export default {
 				'expand-panel': {
 					'0%': { width: '33.333333%' },
 					'100%': { width: '100%' }
-				}
+				},
+				'fade-in-up': {
+					'0%': { opacity: '0', transform: 'translateY(10px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -112,7 +115,8 @@ export default {
 				'slide-in-left': 'slide-in-left 0.5s ease-out',
 				'slide-out-left': 'slide-out-left 0.5s ease-out',
 				'slide-in-right': 'slide-in-right 0.5s ease-out',
-				'expand-panel': 'expand-panel 0.5s ease-out forwards'
+				'expand-panel': 'expand-panel 0.5s ease-out forwards',
+				'fade-in-up': 'fade-in-up 0.3s ease-out',
 			}
 		}
 	},
