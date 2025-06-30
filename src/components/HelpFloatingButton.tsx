@@ -6,18 +6,21 @@ import { toast } from 'sonner';
 import { LifeBuoy, HelpCircle, Users, BookOpen, Globe } from 'lucide-react';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
+import { useLanguage } from '@/hooks/useLanguage';
+import { useTranslation } from 'react-i18next';
 
 const HelpFloatingButton = () => {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [clickTimestamps, setClickTimestamps] = useState<number[]>([]);
-  const [isKorean, setIsKorean] = useState(true);
+  const { currentLanguage, toggleLanguage } = useLanguage();
+  const { t } = useTranslation('common');
 
   const menuItems = [
-    { name: '고객센터 문의', icon: <LifeBuoy className="w-5 h-5 mr-3" /> },
-    { name: '자주 묻는 질문', icon: <HelpCircle className="w-5 h-5 mr-3" /> },
-    { name: '커뮤니티', icon: <Users className="w-5 h-5 mr-3" /> },
-    { name: '학습센터', icon: <BookOpen className="w-5 h-5 mr-3" /> },
+    { name: t('menu_contact'), icon: <LifeBuoy className="w-5 h-5 mr-3" /> },
+    { name: t('menu_faq'), icon: <HelpCircle className="w-5 h-5 mr-3" /> },
+    { name: t('menu_community'), icon: <Users className="w-5 h-5 mr-3" /> },
+    { name: t('menu_learning'), icon: <BookOpen className="w-5 h-5 mr-3" /> },
   ];
 
   const handleCommunityClick = () => {
@@ -32,23 +35,23 @@ const HelpFloatingButton = () => {
       localStorage.removeItem('read_notices');
       localStorage.removeItem('notice_hide_tooltip_shown_count');
       
-      toast.success("캐시가 초기화되었습니다.", {
-        description: "페이지를 새로고침합니다.",
+      toast.success(t('toast_cache_cleared_title'), {
+        description: t('toast_cache_cleared_desc'),
         duration: 2000,
         onAutoClose: () => window.location.reload(),
       });
 
       setClickTimestamps([]);
     } else {
-      toast.info("커뮤니티 기능은 현재 준비중입니다.");
+      toast.info(t('toast_community_soon'));
     }
   };
 
   const handleMenuClick = (menuName: string) => {
-    if (menuName === '커뮤니티') {
+    if (menuName === t('menu_community')) {
       handleCommunityClick();
     } else {
-      toast.info(`'${menuName}' 기능은 현재 준비중입니다.`);
+      toast.info(t('toast_menu_soon', { menuName }));
     }
   };
 
@@ -94,14 +97,14 @@ const HelpFloatingButton = () => {
                 <Globe className="w-5 h-5" />
               </Label>
               <div className="flex items-center gap-2">
-                  <Label className={`text-xs transition-colors ${isKorean ? 'font-bold text-blue-500' : 'font-medium text-zinc-400'}`}>KOR</Label>
+                  <Label className={`text-xs transition-colors ${currentLanguage === 'ko' ? 'font-bold text-blue-500' : 'font-medium text-zinc-400'}`}>KOR</Label>
                   <Switch
                       id="language-toggle"
-                      checked={!isKorean}
-                      onCheckedChange={() => setIsKorean(!isKorean)}
+                      checked={currentLanguage === 'en'}
+                      onCheckedChange={toggleLanguage}
                       aria-label="언어 변경"
                   />
-                  <Label className={`text-xs transition-colors ${!isKorean ? 'font-bold text-blue-500' : 'font-medium text-zinc-400'}`}>ENG</Label>
+                  <Label className={`text-xs transition-colors ${currentLanguage === 'en' ? 'font-bold text-blue-500' : 'font-medium text-zinc-400'}`}>ENG</Label>
               </div>
             </motion.li>
             {menuItems.map((item, index) => (
@@ -127,7 +130,7 @@ const HelpFloatingButton = () => {
         onClick={isMobile ? () => setIsOpen(!isOpen) : undefined}
       >
         <img src="/logo_symbol_color.png" alt="Help" className="h-6 w-6" />
-        <span className="sr-only">도움말</span>
+        <span className="sr-only">{t('help')}</span>
       </Button>
     </div>
   );

@@ -1,6 +1,6 @@
 # ITSCOPE PMO
 
-"프로젝트 관리의 새로운 시작"을 위한 ITSCOPE PMO 프론트엔드 애플리케이션입니다. 이 애플리케이션은 React, TypeScript, Vite, Supabase를 기반으로 구축되었으며, 고급 사용자 인증, 동적 공지사항 시스템, 활동 로깅 등 PMO 도구의 핵심 기능을 제공합니다.
+"프로젝트 관리의 새로운 시작"을 위한 ITSCOPE PMO 프론트엔드 애플리케이션입니다. 이 애플리케이션은 React, TypeScript, Vite, Supabase를 기반으로 구축되었으며, 고급 사용자 인증, 다국어 지원, 동적 공지사항 시스템, 활동 로깅 등 PMO 도구의 핵심 기능을 제공합니다.
 
 ## 기술 스택
 
@@ -10,6 +10,7 @@
 - **Backend**: Supabase (Auth, Database, Edge Functions)
 - **Styling**: Tailwind CSS
 - **UI Components**: shadcn/ui
+- **Internationalization**: i18next, react-i18next
 - **Animation**: Framer Motion
 - **Routing**: React Router
 - **State Management**: React Hooks (useState, useEffect, useContext)
@@ -23,6 +24,10 @@
     - 이메일/비밀번호, 소셜 로그인(Google - 준비중) 지원
     - 가입 여부에 따라 로그인/회원가입으로 자동 분기
     - 2단계 인증(TFA)으로 보안 강화
+- **완벽한 다국어 지원 (i18n)**:
+    - `i18next`를 사용한 한국어/영어 완벽 지원
+    - 사용자의 브라우저 언어 설정 감지 및 언어 토글 스위치 제공
+    - 모든 UI 텍스트, 유효성 검사 메시지, 서버 알림(Toast) 메시지에 다국어 적용
 - **사용자 활동 로깅**:
     - 로그인 성공/실패, 로그아웃, 2FA 시도 등 주요 사용자 활동을 데이터베이스에 기록
     - 관리자가 사용자 활동을 추적하고 이상 징후를 파악할 수 있는 기반 제공
@@ -33,8 +38,6 @@
 - **반응형 UI/UX**:
     - 데스크톱과 모바일 환경에 최적화된 UI 제공
     - 모바일 환경에서의 가독성과 사용성을 고려한 레이아웃 조정
-- **다국어 지원 기반**:
-    - 도움말 플로팅 버튼 내 언어(KOR/ENG) 토글 기능 구현
 
 ## 프로젝트 구조
 
@@ -50,6 +53,7 @@ itscope-app-v1/
 │   ├── types/           # TypeScript 타입 정의
 │   └── utils/           # 순수 함수 유틸리티 (e.g., authUtils)
 ├── public/              # 정적 에셋 (이미지, 폰트 등)
+│   └── locales/         # i18n 번역 리소스 (en, ko)
 ├── REQUIREMENTS_MDs/    # 기능 요구사항 정의서
 ├── DB_SQL_LOG.md        # 데이터베이스 스키마 변경 이력
 ├── USER_FLOW.md         # 사용자 흐름 다이어그램 및 시나리오

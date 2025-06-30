@@ -1,0 +1,11 @@
+{
+  "help": "Help",
+  "menu_contact": "Contact Support",
+  "menu_faq": "FAQ",
+  "menu_community": "Community",
+  "menu_learning": "Learning Center",
+  "toast_cache_cleared_title": "Cache has been cleared.",
+  "toast_cache_cleared_desc": "The page will be reloaded.",
+  "toast_community_soon": "The community feature is coming soon.",
+  "toast_menu_soon": "The '{{menuName}}' feature is coming soon."
+} 

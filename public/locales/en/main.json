@@ -1,0 +1,7 @@
+{
+  "title": "Dashboard",
+  "description": "Main application area.",
+  "logout": "Logout",
+  "currentLanguage": "Current Language: English",
+  "genericError": "An unexpected error occurred. Please try again later."
+} 

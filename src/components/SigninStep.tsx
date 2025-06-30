@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { PMUser } from '@/types/auth';
+import { useTranslation } from 'react-i18next';
 
 interface SigninStepProps {
   email: string;
@@ -14,6 +15,7 @@ interface SigninStepProps {
 }
 
 const SigninStep: React.FC<SigninStepProps> = ({ email, user, onBack, onSignin, onForgotPassword }) => {
+  const { t } = useTranslation('auth');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,14 +37,14 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, user, onBack, onSignin, 
     try {
       await onSignin(password);
     } catch (e) {
-      setError('로그인 처리 중 오류가 발생했습니다.');
+      setError(t('errorSignIn'));
     } finally {
       setIsLoading(false);
     }
   };
 
   const maskName = (name: string | null): string => {
-    if (!name) return '사용자';
+    if (!name) return t('defaultUser');
     if (name.length <= 2) {
       return `${name.charAt(0)}*`;
     }
@@ -55,11 +57,11 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, user, onBack, onSignin, 
       <div className="space-y-6">
         <Button onClick={onBack} variant="ghost" className="p-0 h-auto text-zinc-400 hover:text-blue-400 hover:bg-zinc-800">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          다른 계정으로 로그인
+          {t('backToLogin')}
         </Button>
         <div className="space-y-2 text-center lg:text-left">
           <h2 className="text-2xl font-bold text-white">
-            {maskName(user?.name)}님, 안녕하세요!
+            {t('greeting', { name: maskName(user?.name) })}
           </h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,7 +80,7 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, user, onBack, onSignin, 
               id="password"
               name="password"
               type="password"
-              placeholder="비밀번호"
+              placeholder={t('passwordPlaceholder')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-12 bg-zinc-800 border-zinc-700 text-white"
@@ -88,14 +90,14 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, user, onBack, onSignin, 
           </div>
           <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700" disabled={!password || isLoading}>
             {isLoading && <Loader2 className="w-5 h-5 mr-2 animate-spin" />}
-            계속
+            {t('buttonContinue')}
           </Button>
         </form>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Checkbox id="remember-me" className="border-zinc-600" />
             <label htmlFor="remember-me" className="text-sm text-zinc-300">
-              로그인 상태 유지
+              {t('rememberMe')}
             </label>
           </div>
           <Button
@@ -103,7 +105,7 @@ const SigninStep: React.FC<SigninStepProps> = ({ email, user, onBack, onSignin, 
             className="text-sm text-blue-400 hover:text-blue-300 hover:no-underline"
             onClick={onForgotPassword}
           >
-            비밀번호를 잊으셨나요?
+            {t('forgotPassword')}
           </Button>
         </div>
       </div>

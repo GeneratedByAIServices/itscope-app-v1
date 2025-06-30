@@ -10,6 +10,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useTranslation } from 'react-i18next';
 
 interface FindPasswordStepProps {
   onBack: () => void;
@@ -19,6 +20,7 @@ interface FindPasswordStepProps {
 }
 
 const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setEmail, onPasswordChange }) => {
+  const { t } = useTranslation('auth');
   const [isLoading, setIsLoading] = useState(false);
   
   const [isVerificationSent, setIsVerificationSent] = useState(false);
@@ -48,13 +50,13 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
 
   const handleVerificationRequest = () => {
     if (!email.trim()) {
-        setErrors(prev => ({...prev, email: "이메일을 입력해주세요."}));
+        setErrors(prev => ({...prev, email: t('errorEmailRequired')}));
         return;
     }
     setIsLoading(true);
     // Mock API call
     setTimeout(() => {
-        toast.success("인증 코드가 발송되었습니다: 123456");
+        toast.success(t('verificationCodeSentToast'));
         setIsVerificationSent(true);
         setTimer(180);
         setIsLoading(false);
@@ -64,24 +66,24 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
 
   const handleVerifyCode = () => {
     if (verificationCode === '123456') {
-        toast.success("이메일이 인증되었습니다.", {
-          description: "새로운 비밀번호를 입력해주세요."
+        toast.success(t('emailVerified'), {
+          description: t('emailVerifiedDesc')
         });
         setIsEmailVerified(true);
         setErrors({});
     } else {
-        setErrors(prev => ({...prev, verification: '인증코드가 올바르지 않습니다.'}));
+        setErrors(prev => ({...prev, verification: t('verificationCodeInvalid')}));
     }
   };
 
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmNewPassword) {
-        setErrors(prev => ({...prev, confirmPassword: "비밀번호가 일치하지 않습니다."}));
+        setErrors(prev => ({...prev, confirmPassword: t('errorPasswordMismatch')}));
         return;
     }
-    if (!validatePassword(newPassword).isValid) {
-        setErrors(prev => ({...prev, password: "비밀번호 형식이 올바르지 않습니다."}));
+    if (!validatePassword(newPassword, t).isValid) {
+        setErrors(prev => ({...prev, password: t('errorPasswordFormat')}));
         return;
     }
     setIsLoading(true);
@@ -92,7 +94,7 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
     }, 1000);
   };
   
-  const passwordValidation = validatePassword(newPassword);
+  const passwordValidation = validatePassword(newPassword, t);
   const isChangeDisabled = isLoading || !isEmailVerified || !newPassword || !confirmNewPassword || newPassword !== confirmNewPassword || !passwordValidation.isValid;
 
   return (
@@ -100,13 +102,13 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
       <div className="space-y-6">
         <Button onClick={onBack} variant="ghost" className="p-0 h-auto text-zinc-400 hover:text-blue-400 hover:bg-zinc-800">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          로그인
+          {t('backToLoginShort')}
         </Button>
         
         <div className="space-y-2 text-center lg:text-left">
-          <h1 className="text-3xl font-bold text-white">새 비밀번호</h1>
+          <h1 className="text-3xl font-bold text-white">{t('newPasswordTitle')}</h1>
           <p className="text-zinc-400">
-            {isEmailVerified ? "새로운 비밀번호를 설정해주세요." : "가입에 사용한 이메일에서 인증코드를 확인하세요."}
+            {isEmailVerified ? t('newPasswordDesc') : t('checkEmailForCode')}
           </p>
         </div>
 
@@ -118,7 +120,7 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
                             id="email"
                             name="email"
                             type="email"
-                            placeholder="회사 이메일"
+                            placeholder={t('companyEmailPlaceholder')}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="h-12 bg-zinc-800 border-zinc-700 text-white"
@@ -134,7 +136,7 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
                             <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400" />
                         ) : (
                             <Button type="button" onClick={handleVerificationRequest} disabled={isLoading || (isVerificationSent && timer > 0)} className="absolute right-2 top-1/2 -translate-y-1/2 h-9 shrink-0">
-                                {isLoading ? "확인 중" : (isVerificationSent ? "재전송" : "코드 전송")}
+                                {isLoading ? t('verifying') : (isVerificationSent ? t('resend') : t('sendCode'))}
                             </Button>
                         )}
                     </div>
@@ -146,7 +148,7 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
                     <div className="relative w-full">
                       <Input 
                         type="text" 
-                        placeholder="인증 코드 6자리" 
+                        placeholder={t('verificationCodePlaceholder')} 
                         value={verificationCode} 
                         onChange={(e) => setVerificationCode(e.target.value)} 
                         className="h-12 bg-zinc-800 border-zinc-700 text-white" 
@@ -160,7 +162,7 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-zinc-400">{Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</span>
                     </div>
-                    <Button type="button" onClick={handleVerifyCode} className="h-12 shrink-0" disabled={timer <= 0}>인증 확인</Button>
+                    <Button type="button" onClick={handleVerifyCode} className="h-12 shrink-0" disabled={timer <= 0}>{t('verifyButton')}</Button>
                   </div>
                 )}
                 {errors.verification && <p className="text-red-400 text-sm">{errors.verification}</p>}
@@ -175,7 +177,7 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
                                 id="newPassword"
                                 name="newPassword"
                                 type="password"
-                                placeholder="새 비밀번호"
+                                placeholder={t('newPasswordPlaceholder')}
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 className="h-12 bg-zinc-800 border-zinc-700 text-white"
@@ -207,7 +209,7 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
                                 id="confirmNewPassword"
                                 name="confirmNewPassword"
                                 type="password"
-                                placeholder="새 비밀번호 확인"
+                                placeholder={t('confirmNewPasswordPlaceholder')}
                                 value={confirmNewPassword}
                                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                                 className="h-12 bg-zinc-800 border-zinc-700 text-white"
@@ -220,7 +222,7 @@ const FindPasswordStep: React.FC<FindPasswordStepProps> = ({ onBack, email, setE
                     
                     <div className="mt-6">
                         <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700" disabled={isChangeDisabled}>
-                            {isLoading ? <Loader2 className="animate-spin" /> : '새 비밀번호로 변경'}
+                            {isLoading ? <Loader2 className="animate-spin" /> : t('changeToNewPassword')}
                         </Button>
                     </div>
                 </>

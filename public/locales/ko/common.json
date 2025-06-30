@@ -1,0 +1,11 @@
+{
+  "help": "도움말",
+  "menu_contact": "고객센터 문의",
+  "menu_faq": "자주 묻는 질문",
+  "menu_community": "커뮤니티",
+  "menu_learning": "학습센터",
+  "toast_cache_cleared_title": "캐시가 초기화되었습니다.",
+  "toast_cache_cleared_desc": "페이지를 새로고침합니다.",
+  "toast_community_soon": "커뮤니티 기능은 현재 준비중입니다.",
+  "toast_menu_soon": "'{{menuName}}' 기능은 현재 준비중입니다."
+} 

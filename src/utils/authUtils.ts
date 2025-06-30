@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabaseClient';
 import { PMUser } from '../types/auth';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcryptjs';
+import { TFunction } from 'i18next';
 
 // --- 타입 정의 ---
 // PM_USER 테이블의 전체 구조를 반영하는 타입
@@ -165,28 +166,36 @@ export const validateEmail = (email: string): boolean => {
 };
 
 // 비밀번호 유효성 검사
-export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+export const validatePassword = (password: string, t: TFunction): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  
-  if (password.length < 8) {
-    errors.push('8자 이상이어야 합니다');
+
+  // 모든 조건을 하나의 정규식으로 결합
+  const hasMinLength = password.length >= 8 && password.length <= 16;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*]/.test(password);
+
+  if (!hasMinLength) {
+    errors.push(t('passwordRule_length'));
   }
-  
-  if (!/[A-Z]/.test(password)) {
-    errors.push('대문자를 포함해야 합니다');
+  if (!hasUpperCase || !hasLowerCase) {
+    errors.push(t('passwordRule_english'));
   }
-  
-  if (!/[a-z]/.test(password)) {
-    errors.push('소문자를 포함해야 합니다');
+  if (!hasNumber) {
+    errors.push(t('passwordRule_number'));
   }
-  
-  if (!/[0-9]/.test(password)) {
-    errors.push('숫자를 포함해야 합니다');
+  if (!hasSpecialChar) {
+    errors.push(t('passwordRule_special'));
   }
-  
-  if (!/[!@#$%^&*]/.test(password)) {
-    errors.push('특수문자를 포함해야 합니다');
-  }
+
+  // 보다 상세한 개별 규칙 적용
+  // if (password.length < 8 || password.length > 16) {
+  //   errors.push(t('passwordRule_length'));
+  // }
+  // if (!/[a-zA-Z]/.test(password)) {
+  //   errors.push(t('passwordRule_english'));
+  // }
   
   return {
     isValid: errors.length === 0,

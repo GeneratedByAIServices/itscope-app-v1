@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface SignUpInfoPanelProps {
   isVisible: boolean;
 }
 
 const SignUpInfoPanel: React.FC<SignUpInfoPanelProps> = ({ isVisible }) => {
+  const { t } = useTranslation('auth');
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
@@ -16,28 +18,7 @@ const SignUpInfoPanel: React.FC<SignUpInfoPanelProps> = ({ isVisible }) => {
     }
   }, [isVisible]);
 
-  const featureItems = [
-    { 
-      text: '효과적인 프로젝트 업무 파악', 
-      subText: '프로젝트 상태, 진척, 공수, 산출물 등을 한눈에 파악하고 관리할 수 있습니다.', 
-      color: 'bg-blue-500' 
-    },
-    { 
-      text: 'PMO를 위한 가시적인 프로젝트 모니터링', 
-      subText: '프로젝트 현황과 이슈를 실시간으로 모니터링하고 신속한 의사결정을 지원합니다.', 
-      color: 'bg-purple-500' 
-    },
-    { 
-      text: '업무 표준 기반의 체계적인 SDLC 관리', 
-      subText: '표준화된 개발 생명주기를 통해 일관성 있는 프로젝트 관리가 가능합니다.', 
-      color: 'bg-green-500' 
-    },
-    { 
-      text: '사용자 친화적 업무함 및 커뮤니케이션', 
-      subText: '직관적인 인터페이스로 업무 처리와 팀원 간 소통이 더욱 원활해집니다.', 
-      color: 'bg-yellow-500' 
-    },
-  ];
+  const featureItems = t('signUpFeatures', { returnObjects: true }) as { title: string; desc: string }[];
 
   return (
     <div 
@@ -55,13 +36,13 @@ const SignUpInfoPanel: React.FC<SignUpInfoPanelProps> = ({ isVisible }) => {
       <div className="relative z-10 text-right max-w-lg">
         <div className="mb-12">
           <h1 className="text-3xl lg:text-3xl font-bold text-white mb-3">
-            Sign Up
+            {t('signUp')}
           </h1>
         </div>
 
         <div className="space-y-3">
           <h2 className="text-xl font-semibold text-white">
-            새로운 시작을 환영합니다!
+            {t('signUpNew')}
           </h2>
           {/* <p className="text-zinc-300 text-lg leading-relaxed">
             ITSCOPE PMO와 함께 프로젝트 관리를 혁신하세요.
@@ -80,8 +61,8 @@ const SignUpInfoPanel: React.FC<SignUpInfoPanelProps> = ({ isVisible }) => {
               style={{ transitionDelay: `${index * 500}ms` }}
             >
               <div>
-                <p className="text-white font-medium">{item.text}</p>
-                <p className="text-zinc-400 mt-1 text-sm">{item.subText}</p>
+                <p className="text-white font-medium">{item.title}</p>
+                <p className="text-zinc-400 mt-1 text-sm whitespace-pre-line">{item.desc}</p>
               </div>
             </div>
           ))}

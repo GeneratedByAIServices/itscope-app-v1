@@ -35,7 +35,7 @@ const WelcomePanel: React.FC<WelcomePanelProps> = ({ isVisible, noticeListProps 
       
       <div className="relative z-10 text-right max-w-lg">
         {/* 로고/브랜드 영역 */}
-        <div className="mb-12">
+        <div className="mb-6">
           <div 
             className={`transition-all duration-500 ease-out ${isAnimating ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
             style={{ transitionDelay: '0ms' }}

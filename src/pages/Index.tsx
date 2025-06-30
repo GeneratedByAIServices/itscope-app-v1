@@ -16,6 +16,8 @@ import NoticeList from '../components/NoticeList';
 import NoticeDetailModal from '../components/NoticeDetailModal';
 import { Notice } from '../types/notice';
 import { useIsMobile } from '../hooks/use-mobile';
+import { useTranslation } from 'react-i18next';
+import i18n from '../lib/i18n';
 
 type AuthStep = 'welcome' | 'signin' | 'signup' | '2fa' | 'success' | 'findPassword' | 'dashboard';
 type ViewMode = 'welcome' | 'signup';
@@ -25,6 +27,7 @@ const READ_NOTICES_KEY = 'read_notices';
 const TOOLTIP_SHOWN_COUNT_KEY = 'notice_hide_tooltip_shown_count';
 
 const IndexPage = () => {
+  const { t } = useTranslation(['auth', 'main']);
   const isMobile = useIsMobile();
   const [authState, setAuthState] = useState<{
     step: AuthStep;
@@ -242,7 +245,7 @@ const IndexPage = () => {
         eventAction: 'Primary Login Success',
         isSuccess: true,
       });
-      setAuthState(s => ({ ...s, step: '2fa', user }));
+      setAuthState(s => ({ ...s, step: '2fa', user, view: 'welcome' }));
     } else {
       console.error("Signin failed:", error);
       incrementFailedLoginAttempts(authState.email); 
@@ -263,7 +266,7 @@ const IndexPage = () => {
     const { email, password, name } = data;
     const emailExists = await checkEmailExists(email);
     if (emailExists) {
-        toast.error("이미 가입된 이메일입니다. 로그인 화면으로 이동합니다.");
+        toast.error(t('main:emailAlreadyExists'));
         const user = await getUserByEmail(email);
         setAuthState(s => ({ ...s, step: 'signin', email, user, view: 'welcome' }));
         return;
@@ -277,10 +280,11 @@ const IndexPage = () => {
         eventAction: 'Account Created',
         isSuccess: true,
       });
-      toast.success("회원가입이 완료되었습니다.", {
-        description: "로그인을 위해 2단계 인증을 진행합니다."
+      const signupToastContent = i18n.t('auth:signupSuccess', { returnObjects: true }) as { title: string; description: string };
+      toast.success(signupToastContent.title, {
+        description: signupToastContent.description,
       });
-      setAuthState(s => ({ ...s, step: '2fa', user }));
+      setAuthState(s => ({ ...s, step: '2fa', user, email: user.email, view: 'welcome' }));
     } else {
       logUserActivity({
         userId: null,
@@ -322,8 +326,8 @@ const IndexPage = () => {
     setAuthState(s => ({ ...s, step: 'dashboard' }));
   };
 
-  const handleLogout = () => {
-    logUserActivity({
+  const handleLogout = async () => {
+    await logUserActivity({
       userId: authState.user?.id || null,
       eventCategory: 'Authentication',
       eventAction: 'Logout',
@@ -336,11 +340,12 @@ const IndexPage = () => {
       isExpanded: false,
       view: 'welcome',
     });
-    toast.info("성공적으로 로그아웃되었습니다.");
+    toast.success(i18n.t('auth:logoutSuccess'));
   };
 
   const handleEmailCheck = async (email: string) => {
-    return await checkEmailExists(email);
+    const emailExists = await checkEmailExists(email);
+    return emailExists;
   };
 
   const handleResetPassword = async (password: string) => {
@@ -449,8 +454,8 @@ const IndexPage = () => {
             </div>
           ) : (
             <div>
-              <h1 className="text-2xl font-bold text-white">Sign Up</h1>
-              <p className="text-zinc-400 mt-1">새로운 시작을 환영합니다!</p>
+              <h1 className="text-2xl font-bold text-white">{t('auth:signUp')}</h1>
+              <p className="text-zinc-400 mt-1">{t('auth:signupMobileTitle')}</p>
             </div>
           )}
         </div>

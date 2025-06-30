@@ -2,25 +2,28 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PMUser } from "@/types/auth";
 import { Check, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface SuccessStepProps {
   user: PMUser | null;
   onContinue: () => void;
 }
 
-const loadingLogs = [
-  { id: 1, text: '사용자 프로필 로딩' },
-  { id: 2, text: '권한 그룹 확인' },
-  { id: 3, text: '보안 정책 적용' },
-  { id: 4, text: '작업 공간 설정' },
-  { id: 5, text: '대시보드 초기화' },
-  { id: 6, text: '최종 설정 완료' },
-];
-
 const SuccessStep = ({ user, onContinue }: SuccessStepProps) => {
+  const { t } = useTranslation('auth');
   const [logs, setLogs] = useState<{ id: number; text: string }[]>([]);
   const [progress, setProgress] = useState(0);
   const animationFrameId = useRef<number>();
+  const logTimerIds = useRef<NodeJS.Timeout[]>([]);
+
+  const loadingLogs = [
+    { id: 1, text: t('loadingLogs.profile') },
+    { id: 2, text: t('loadingLogs.permission') },
+    { id: 3, text: t('loadingLogs.security') },
+    { id: 4, text: t('loadingLogs.workspace') },
+    { id: 5, text: t('loadingLogs.dashboard') },
+    { id: 6, text: t('loadingLogs.final') },
+  ];
 
   useEffect(() => {
     const totalDuration = 3000;
@@ -29,9 +32,14 @@ const SuccessStep = ({ user, onContinue }: SuccessStepProps) => {
     // 로그를 순차적으로 표시
     const logInterval = totalDuration / loadingLogs.length;
     loadingLogs.forEach((log, index) => {
-      setTimeout(() => {
-        setLogs(prevLogs => [...prevLogs, log]);
+      const timerId = setTimeout(() => {
+        setLogs(prevLogs => {
+          // StrictMode에서 중복 추가 방지
+          if (prevLogs.some(p => p.id === log.id)) return prevLogs;
+          return [...prevLogs, log]
+        });
       }, index * logInterval);
+      logTimerIds.current.push(timerId);
     });
     
     // 프로그레스 바 애니메이션
@@ -55,18 +63,20 @@ const SuccessStep = ({ user, onContinue }: SuccessStepProps) => {
         cancelAnimationFrame(animationFrameId.current);
       }
       clearTimeout(redirectTimer);
+      logTimerIds.current.forEach(clearTimeout);
+      logTimerIds.current = [];
     };
-  }, [onContinue]);
+  }, [onContinue, t]);
 
   return (
     <div className="w-full max-w-sm mx-auto lg:mx-0">
       <div className="space-y-6">
         <div className="text-center lg:text-left">
           <h2 className="text-2xl font-bold text-white mb-1">
-            인증 완료되었습니다
+            {t('authComplete')}
           </h2>
           <p className="text-zinc-400">
-            환영합니다, {user?.name || user?.email}님!
+            {t('welcome', { name: user?.name || user?.email })}
           </p>
         </div>
 

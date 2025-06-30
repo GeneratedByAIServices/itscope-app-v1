@@ -12,6 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useTranslation } from 'react-i18next';
 
 interface TwoFactorStepProps {
   user: PMUser | null;
@@ -20,6 +21,7 @@ interface TwoFactorStepProps {
 }
 
 const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify }) => {
+  const { t } = useTranslation('auth');
   const [code, setCode] = useState('');
   const [method, setMethod] = useState<'totp' | 'sms'>('totp');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +32,7 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code || code.length !== 6) {
-      setError('6자리 인증 코드를 입력해주세요');
+      setError(t('errorInvalid2FACode'));
       return;
     }
 
@@ -41,7 +43,7 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify })
     onVerify(code, isValid);
     
     if (!isValid) {
-      setError('인증 코드가 올바르지 않습니다.');
+      setError(t('error2FACodeMismatch'));
     }
     setIsLoading(false);
   };
@@ -62,7 +64,7 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify })
     }
 
     setCode(''); // 텍스트 필드 비우기
-    toast.info('인증 코드가 재전송되었습니다.');
+    toast.info(t('resend2FACodeToast'));
     
     setCountdown(180); // 3분 = 180초
     timerRef.current = setInterval(() => {
@@ -83,12 +85,12 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify })
   };
 
   const placeholderText = countdown > 0 
-    ? `인증 코드 (남은 시간: ${formatTime(countdown)})` 
-    : '6자리 인증 코드';
+    ? t('2faPlaceholderCountdown', { time: formatTime(countdown) })
+    : t('2faPlaceholder');
 
   const handleSkip = () => {
-    toast.warning("2단계 인증을 건너뛰었습니다.", {
-      description: "계정 보안을 위해 2단계 인증 설정을 권장합니다."
+    toast.warning(t('skip2FAWarningTitle'), {
+      description: t('skip2FAWarningDesc')
     });
     onVerify('skipped_2fa', true);
   };
@@ -98,11 +100,11 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify })
       <div className="space-y-6">
         <Button onClick={onBack} variant="ghost" className="p-0 h-auto text-zinc-400 hover:text-blue-400 hover:bg-zinc-800" disabled={isLoading}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          다른 아이디로 로그인
+          {t('backToLogin')}
         </Button>
 
         <div className="text-center lg:text-left">
-          <h2 className="text-2xl font-bold text-white mb-2">2단계 인증</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">{t('twoFactorAuth')}</h2>
           {/* <p className="text-zinc-400">보안 강화를 위해 2단계 인증 코드를 입력하세요.</p> */}
         </div>
 
@@ -111,18 +113,18 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify })
             <Button type="button" variant={method === 'totp' ? 'default' : 'outline'}
               className={`h-12 ${method === 'totp' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}
               onClick={() => setMethod('totp')} disabled={isLoading}>
-              앱 인증
+              {t('appVerification')}
             </Button>
             <Button type="button" variant={method === 'sms' ? 'default' : 'outline'}
               className={`h-12 ${method === 'sms' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-600'}`}
               onClick={() => setMethod('sms')} disabled={isLoading}>
-              SMS 인증
+              {t('smsVerification')}
             </Button>
           </div>
           <p className="text-sm text-zinc-500 text-center lg:text-left">
             {method === 'totp'
-              ? 'Google Authenticator 또는 Authy 앱에서 생성된 6자리 코드를 입력하세요'
-              : `휴대폰(${user?.email})으로 전송된 6자리 인증 코드를 입력하세요`}
+              ? t('totpGuide')
+              : t('smsGuide', { contact: user?.email })}
           </p>
         </div>
 
@@ -136,30 +138,28 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify })
               <Button type="button" variant="link"
                 className="absolute right-1 top-1/2 -translate-y-1/2 text-sm text-blue-400 hover:text-blue-300 disabled:text-zinc-500 disabled:cursor-not-allowed px-2"
                 onClick={handleResendCode} disabled={isLoading}>
-                {method === 'sms' ? 'SMS 재전송' : '새 코드 요청'}
+                {method === 'sms' ? t('resendSms') : t('requestNewCode')}
               </Button>
             </div>
             {error && (<p className="text-red-400 text-sm mt-2">{error}</p>)}
           </div>
           <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading || code.length !== 6}>
-            {isLoading ? (<Loader2 className="w-5 h-5 animate-spin" />) : ('인증 완료')}
+            {isLoading ? (<Loader2 className="w-5 h-5 animate-spin" />) : (t('verifyComplete'))}
           </Button>
         </form>
 
         <Accordion type="single" collapsible className="w-full pt-2">
           <AccordionItem value="item-1" className="border-b-0">
             <AccordionTrigger className="text-sm text-zinc-400 hover:no-underline [&[data-state=open]]:text-white">
-              인증에 문제가 있거나 건너뛰고 싶으신가요?
+              {t('2faHelpTitle')}
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-4 pt-2">
                 <Alert variant="destructive" className="bg-red-900/20 border-red-500/30 text-red-300">
                   <AlertTriangle className="h-4 w-4 !text-red-400" />
-                  <AlertTitle className="text-red-400 font-bold">경고: 보안 수준 저하</AlertTitle>
+                  <AlertTitle className="text-red-400 font-bold">{t('warning2FASkipTitle')}</AlertTitle>
                   <AlertDescription>
-                    2단계 미인증에 대해서는 별도의 로그로 기록되며, 일부 기능의 액세스에 제한을 받을 수 있습니다.
-                    <br />
-                    동의하실 경우, 아래의 건너뛰기 버튼을 눌러주세요.
+                    {t('warning2FASkipDesc').split('\n').map((line, i) => <React.Fragment key={i}>{line}<br/></React.Fragment>)}
                   </AlertDescription>
                 </Alert>
                 <Button
@@ -167,7 +167,7 @@ const TwoFactorStep: React.FC<TwoFactorStepProps> = ({ user, onBack, onVerify })
                   className="w-full h-11 bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-red-900/50 hover:border-red-500/50 hover:text-red-300"
                   onClick={handleSkip}
                 >
-                  동의하고 건너뛰기
+                  {t('agreeAndSkip')}
                 </Button>
               </div>
             </AccordionContent>
